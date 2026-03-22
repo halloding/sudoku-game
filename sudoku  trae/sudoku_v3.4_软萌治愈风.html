@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 v3.4 软萌治愈风</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #FDFBF6 0%, #F8F4ED 50%, #F5EDE3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(248, 225, 229, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 233, 215, 0.4) 0%, transparent 50%);
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 36px;
+            box-shadow: 
+                0 20px 60px rgba(180, 160, 140, 0.15),
+                0 8px 25px rgba(180, 160, 140, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            max-width: 480px;
+            width: 100%;
+            border: 3px solid rgba(248, 225, 229, 0.5);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 34px;
+            font-weight: 700;
+            color: #8B7355;
+            margin-bottom: 30px;
+            letter-spacing: 4px;
+        }
+
+        .title span {
+            color: #E8B4B8;
+        }
+
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .home-btn {
+            padding: 18px 28px;
+            font-size: 17px;
+            font-weight: 500;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #8B7355;
+            letter-spacing: 3px;
+            background: linear-gradient(145deg, #FDFBF6, #F8F0E8);
+            box-shadow: 
+                0 6px 20px rgba(180, 160, 140, 0.15),
+                inset 0 2px 0 rgba(255, 255, 255, 0.9);
+            border: 2px solid #F5E9D7;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 10px 30px rgba(180, 160, 140, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .home-btn:active {
+            transform: translateY(0);
+        }
+
+        .home-btn.new-game {
+            background: linear-gradient(145deg, #F8E1E5, #F2D4D9);
+            border-color: #F8D4D9;
+        }
+
+        .home-btn.continue {
+            background: linear-gradient(145deg, #E8EAF6, #E0E4ED);
+            border-color: #E0E4ED;
+        }
+
+        .home-btn.records {
+            background: linear-gradient(145deg, #F5E9D7, #EFE3D0);
+            border-color: #EFE3D0;
+        }
+
+        .home-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .difficulty-screen {
+            text-align: center;
+        }
+
+        .difficulty-screen h2 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #A89F91;
+            margin-bottom: 30px;
+            letter-spacing: 4px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .diff-btn {
+            padding: 16px 28px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #FDFBF6;
+            letter-spacing: 3px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .diff-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .diff-btn.easy {
+            background: linear-gradient(145deg, #B8D4C8, #A8C4B8);
+        }
+
+        .diff-btn.medium {
+            background: linear-gradient(145deg, #E8D5C4, #D8C5B4);
+        }
+
+        .diff-btn.hard {
+            background: linear-gradient(145deg, #D4C8C8, #C4B8B8);
+        }
+
+        .back-btn {
+            margin-top: 26px;
+            padding: 14px 28px;
+            font-size: 14px;
+            font-weight: 500;
+            background: #F5E9D7;
+            color: #A89F91;
+            border: 2px solid #EFE3D0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 2px;
+        }
+
+        .back-btn:hover {
+            background: #FDFBF6;
+            transform: translateY(-2px);
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 500;
+            color: #A89F91;
+            margin-bottom: 18px;
+            padding: 16px;
+            background: linear-gradient(145deg, #FDFBF6, #F8F0E8);
+            border-radius: 20px;
+            letter-spacing: 5px;
+            border: 2px solid #F5E9D7;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .level-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: #FDFBF6;
+        }
+
+        .level-badge.easy {
+            background: linear-gradient(145deg, #B8D4C8, #A8C4B8);
+        }
+
+        .level-badge.medium {
+            background: linear-gradient(145deg, #E8D5C4, #D8C5B4);
+        }
+
+        .level-badge.hard {
+            background: linear-gradient(145deg, #D4C8C8, #C4B8B8);
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #E8DFD3;
+            border: 3px solid #E8DFD3;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 
+                inset 0 2px 8px rgba(0, 0, 0, 0.05),
+                0 4px 15px rgba(180, 160, 140, 0.1);
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 500;
+            background: linear-gradient(145deg, #FDFBF6, #F8F4ED);
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #8B7355;
+            border-radius: 8px;
+        }
+
+        .cell:nth-child(3n) {
+            border-right: 3px solid #E8DFD3;
+        }
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #E8DFD3;
+        }
+
+        .cell.initial {
+            background: linear-gradient(145deg, #F5E9D7, #EFE3D0);
+            color: #A89F91;
+        }
+
+        .cell.input-cell {
+            background: linear-gradient(145deg, #FDFBF6, #F8F4ED);
+            color: #C4A98C;
+        }
+
+        .cell.error {
+            background: linear-gradient(145deg, #FCECEC, #F8E0E0);
+            color: #E8A0A0;
+        }
+
+        .cell:focus-within {
+            outline: none;
+            background: linear-gradient(145deg, #F8E1E5, #F2D4D9);
+            box-shadow: 0 0 15px rgba(248, 225, 229, 0.5);
+            z-index: 1;
+            border-radius: 8px;
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 500;
+            color: #C4A98C;
+            background: transparent;
+            outline: none;
+            padding: 0;
+        }
+
+        .cell.initial input {
+            color: #A89F91;
+        }
+
+        .cell.error input {
+            color: #E8A0A0;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8B7355;
+            letter-spacing: 2px;
+            background: linear-gradient(145deg, #FDFBF6, #F8F0E8);
+            box-shadow: 
+                0 4px 12px rgba(180, 160, 140, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 2px solid #F5E9D7;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 18px rgba(180, 160, 140, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            background: linear-gradient(145deg, #ffffff, #f8f4ed);
+        }
+
+        .btn-quit {
+            background: linear-gradient(145deg, #E8E0D8, #DDD5CB);
+            border-color: #DDD5CB;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: linear-gradient(145deg, #E8F5E9, #D4EED9);
+            color: #81C784;
+            border: 2px solid #C8E6C9;
+        }
+
+        .message.error {
+            display: block;
+            background: linear-gradient(145deg, #FCECEC, #F8E0E0);
+            color: #E8A0A0;
+            border: 2px solid #FFCDD2;
+        }
+
+        .victory-screen {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .victory-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            animation: gentle-bounce 1s ease-in-out infinite;
+            color: #E8B4B8;
+            text-shadow: 2px 2px 4px rgba(232, 180, 184, 0.3);
+        }
+
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .victory-stats {
+            background: linear-gradient(145deg, #FDFBF6, #F8F0E8);
+            border-radius: 24px;
+            padding: 26px;
+            margin: 22px 0;
+            border: 3px solid #F5E9D7;
+        }
+
+        .stat-item {
+            margin: 16px 0;
+            font-size: 14px;
+            color: #A89F91;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 500;
+            color: #C4A98C;
+            display: block;
+            margin-top: 6px;
+            letter-spacing: 3px;
+        }
+
+        .ai-score {
+            font-size: 14px;
+            color: #E8B4B8;
+            margin-top: 20px;
+            padding: 18px;
+            background: linear-gradient(145deg, #F8E1E5, #F2D4D9);
+            border-radius: 20px;
+            letter-spacing: 2px;
+            border: 2px solid #F8D4D9;
+        }
+
+        .score-stars {
+            font-size: 28px;
+            margin-top: 12px;
+            letter-spacing: 6px;
+        }
+
+        .victory-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .victory-btn {
+            padding: 16px 28px;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #FDFBF6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .victory-btn.home {
+            background: linear-gradient(145deg, #E8D5C4, #D8C5B4);
+        }
+
+        .victory-btn.replay {
+            background: linear-gradient(145deg, #B8D4C8, #A8C4B8);
+        }
+
+        .victory-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .records-screen {
+            text-align: center;
+        }
+
+        .records-screen h2 {
+            font-size: 20px;
+            font-weight: 500;
+            color: #A89F91;
+            margin-bottom: 26px;
+            letter-spacing: 4px;
+        }
+
+        .record-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .record-card {
+            background: linear-gradient(145deg, #FDFBF6, #F8F0E8);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #F5E9D7;
+        }
+
+        .record-level {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: #FDFBF6;
+        }
+
+        .record-level.easy {
+            background: linear-gradient(145deg, #B8D4C8, #A8C4B8);
+        }
+
+        .record-level.medium {
+            background: linear-gradient(145deg, #E8D5C4, #D8C5B4);
+        }
+
+        .record-level.hard {
+            background: linear-gradient(145deg, #D4C8C8, #C4B8B8);
+        }
+
+        .record-time {
+            font-size: 20px;
+            font-weight: 500;
+            color: #C4A98C;
+            letter-spacing: 3px;
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 26px 18px;
+            }
+            .title {
+                font-size: 26px;
+            }
+            .cell, .cell input {
+                font-size: 16px;
+            }
+            .button-section {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="page active" id="homePage">
+            <h1 class="title">数<span>独</span>时光</h1>
+            <div class="home-buttons">
+                <button class="home-btn new-game" onclick="showDifficultyScreen()">新游戏</button>
+                <button class="home-btn continue" id="continueBtn" onclick="continueGame()">继续游戏</button>
+                <button class="home-btn records" onclick="showRecords()">查看纪录</button>
+            </div>
+        </div>
+
+        <div class="page" id="difficultyPage">
+            <div class="difficulty-screen">
+                <h2>选择难度</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn easy" onclick="startNewGame('easy')">简单</button>
+                    <button class="diff-btn medium" onclick="startNewGame('medium')">中等</button>
+                    <button class="diff-btn hard" onclick="startNewGame('hard')">困难</button>
+                </div>
+                <button class="back-btn" onclick="showHomePage()">返回</button>
+            </div>
+        </div>
+
+        <div class="page" id="gamePage">
+            <div class="game-header">
+                <div class="level-badge easy" id="levelBadge">简单</div>
+                <button class="btn btn-quit" onclick="quitGame()">退出</button>
+            </div>
+            <div class="timer-display" id="timer">00:00</div>
+            <div class="sudoku-board" id="board"></div>
+            <div class="button-section">
+                <button class="btn" onclick="restartGame()">新游戏</button>
+                <button class="btn" onclick="checkAnswer()">检查</button>
+                <button class="btn" onclick="clearInput()">清空</button>
+            </div>
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="page" id="victoryPage">
+            <div class="victory-screen">
+                <div class="victory-title">你好棒呀</div>
+                <div class="victory-stats">
+                    <div class="stat-item">
+                        <span>用时</span>
+                        <span class="stat-value" id="finalTime">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>难度</span>
+                        <span class="stat-value" id="finalLevel">简单</span>
+                    </div>
+                </div>
+                <div class="ai-score">
+                    <div>小评价</div>
+                    <div class="score-stars" id="aiStars">★★★★★</div>
+                    <div id="aiComment" style="margin-top:10px;color:#C4A98C">超级厉害呢</div>
+                </div>
+                <div class="victory-buttons">
+                    <button class="victory-btn home" onclick="showHomePage()">返回首页</button>
+                    <button class="victory-btn replay" onclick="startNewGame(currentLevel)">再玩一次</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="recordsPage">
+            <div class="records-screen">
+                <h2>游戏纪录</h2>
+                <div class="record-cards">
+                    <div class="record-card">
+                        <span class="record-level easy">简单</span>
+                        <span class="record-time" id="recordEasy">--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level medium">中等</span>
+                        <span class="record-time" id="recordMedium">--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level hard">困难</span>
+                        <span class="record-time" id="recordHard">--:--</span>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="showHomePage()" style="margin-top:26px">返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let solution = [];
+        let puzzle = [];
+        let currentLevel = 'easy';
+        let gameStarted = false;
+        let savedGame = null;
+        let timerInterval = null;
+        let seconds = 0;
+        let records = { easy: null, medium: null, hard: null };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showHomePage() {
+            stopTimer();
+            updateContinueButton();
+            showPage('homePage');
+        }
+
+        function showDifficultyScreen() {
+            showPage('difficultyPage');
+        }
+
+        function showRecords() {
+            loadRecords();
+            showPage('recordsPage');
+        }
+
+        function loadRecords() {
+            const saved = localStorage.getItem('sudokuRecords');
+            if (saved) records = JSON.parse(saved);
+            document.getElementById('recordEasy').textContent = records.easy ? formatTime(records.easy) : '--:--';
+            document.getElementById('recordMedium').textContent = records.medium ? formatTime(records.medium) : '--:--';
+            document.getElementById('recordHard').textContent = records.hard ? formatTime(records.hard) : '--:--';
+        }
+
+        function saveRecord(level, time) {
+            if (!records[level] || time < records[level]) {
+                records[level] = time;
+                localStorage.setItem('sudokuRecords', JSON.stringify(records));
+            }
+        }
+
+        function updateContinueButton() {
+            const btn = document.getElementById('continueBtn');
+            const saved = localStorage.getItem('sudokuSavedGame');
+            if (saved) {
+                savedGame = JSON.parse(saved);
+                btn.classList.remove('disabled');
+            } else {
+                btn.classList.add('disabled');
+            }
+        }
+
+        function continueGame() {
+            if (!savedGame) return;
+            solution = savedGame.solution;
+            puzzle = savedGame.puzzle;
+            currentLevel = savedGame.level;
+            seconds = savedGame.seconds;
+            renderBoard(savedGame.userInput);
+            startTimer();
+            updateLevelBadge();
+            showPage('gamePage');
+        }
+
+        function startNewGame(level) {
+            currentLevel = level;
+            solution = generateSolvedSudoku();
+            puzzle = createPuzzle(solution, level);
+            renderBoard({});
+            startTimer();
+            updateLevelBadge();
+            saveGame({});
+            showPage('gamePage');
+        }
+
+        function restartGame() {
+            startNewGame(currentLevel);
+        }
+
+        function quitGame() {
+            showHomePage();
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                seconds++;
+                document.getElementById('timer').textContent = formatTime(seconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60).toString().padStart(2, '0');
+            const s = (secs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateLevelBadge() {
+            const badge = document.getElementById('levelBadge');
+            const levels = { easy: '简单', medium: '中等', hard: '困难' };
+            badge.textContent = levels[currentLevel];
+            badge.className = 'level-badge ' + currentLevel;
+        }
+
+        function saveGame(userInput) {
+            savedGame = {
+                solution: solution,
+                puzzle: puzzle,
+                level: currentLevel,
+                seconds: seconds,
+                userInput: userInput
+            };
+            localStorage.setItem('sudokuSavedGame', JSON.stringify(savedGame));
+        }
+
+        function clearSavedGame() {
+            savedGame = null;
+            localStorage.removeItem('sudokuSavedGame');
+        }
+
+        function generateSolvedSudoku() {
+            let board = Array(9).fill(null).map(() => Array(9).fill(0));
+            solveSudoku(board);
+            return board;
+        }
+
+        function solveSudoku(board) {
+            let empty = findEmpty(board);
+            if (!empty) return true;
+            let [row, col] = empty;
+            let nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            for (let num of nums) {
+                if (isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    if (solveSudoku(board)) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        function findEmpty(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) return [row, col];
+                }
+            }
+            return null;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let c = 0; c < 9; c++) {
+                if (board[row][c] === num) return false;
+            }
+            for (let r = 0; r < 9; r++) {
+                if (board[r][col] === num) return false;
+            }
+            let startRow = Math.floor(row / 3) * 3;
+            let startCol = Math.floor(col / 3) * 3;
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if (board[r][c] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function shuffleArray(arr) {
+            let result = [...arr];
+            for (let i = result.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+
+        function createPuzzle(solution, level) {
+            let puzzle = solution.map(row => [...row]);
+            let removeCount;
+            switch(level) {
+                case 'easy': removeCount = 35 + Math.floor(Math.random() * 6); break;
+                case 'medium': removeCount = 45 + Math.floor(Math.random() * 6); break;
+                case 'hard': removeCount = 55 + Math.floor(Math.random() * 6); break;
+                default: removeCount = 35;
+            }
+            let positions = shuffleArray([...Array(81).keys()]);
+            for (let i = 0; i < removeCount; i++) {
+                let pos = positions[i];
+                let row = Math.floor(pos / 9);
+                let col = pos % 9;
+                puzzle[row][col] = 0;
+            }
+            return puzzle;
+        }
+
+        function renderBoard(userInput = {}) {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    let value = puzzle[row][col];
+                    if (value !== 0) {
+                        cell.classList.add('initial');
+                        cell.textContent = value;
+                    } else {
+                        cell.classList.add('input-cell');
+                        let input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.inputMode = 'numeric';
+                        const key = `${row}-${col}`;
+                        if (userInput[key]) input.value = userInput[key];
+                        input.addEventListener('input', function(e) {
+                            this.value = this.value.replace(/[^1-9]/g, '');
+                            if (this.value.length > 1) this.value = this.value.charAt(0);
+                            cell.classList.remove('error');
+                            saveCurrentInput();
+                        });
+                        input.addEventListener('keydown', function(e) {
+                            handleKeyDown(e, row, col);
+                        });
+                        cell.appendChild(input);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function saveCurrentInput() {
+            let userInput = {};
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let key = `${cell.dataset.row}-${cell.dataset.col}`;
+                if (input.value) userInput[key] = input.value;
+            });
+            if (savedGame) {
+                savedGame.userInput = userInput;
+                savedGame.seconds = seconds;
+                localStorage.setItem('sudokuSavedGame', JSON.stringify(savedGame));
+            }
+        }
+
+        function handleKeyDown(e, row, col) {
+            let newRow = row, newCol = col;
+            switch(e.key) {
+                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                case 'ArrowDown': newRow = Math.min(8, row + 1); break;
+                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                case 'ArrowRight': newCol = Math.min(8, col + 1); break;
+                default: return;
+            }
+            if (newRow !== row || newCol !== col) {
+                e.preventDefault();
+                let nextCell = document.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"] input`);
+                if (nextCell) nextCell.focus();
+            }
+        }
+
+        function checkAnswer() {
+            let hasError = false;
+            let allFilled = true;
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col);
+                let value = parseInt(input.value) || 0;
+                if (value === 0) allFilled = false;
+                if (value !== 0 && value !== solution[row][col]) {
+                    cell.classList.add('error');
+                    hasError = true;
+                } else {
+                    cell.classList.remove('error');
+                }
+            });
+            if (!hasError && allFilled) {
+                gameWin();
+            } else if (hasError) {
+                showMessage('有一点点错误呢', 'error');
+            } else if (!allFilled) {
+                showMessage('还没填完哦', 'error');
+            }
+        }
+
+        function clearInput() {
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                input.value = '';
+                cell.classList.remove('error');
+            });
+            saveCurrentInput();
+            hideMessage();
+        }
+
+        function gameWin() {
+            stopTimer();
+            clearSavedGame();
+            saveRecord(currentLevel, seconds);
+            document.getElementById('finalTime').textContent = formatTime(seconds);
+            const levels = { easy: '简单', medium: '中等', hard: '困难' };
+            document.getElementById('finalLevel').textContent = levels[currentLevel];
+            const score = calculateAIScore(currentLevel, seconds);
+            document.getElementById('aiStars').textContent = '★'.repeat(score.stars) + '☆'.repeat(5 - score.stars);
+            document.getElementById('aiComment').textContent = score.comment;
+            showPage('victoryPage');
+        }
+
+        function calculateAIScore(level, time) {
+            const baseTimes = { easy: 180, medium: 300, hard: 600 };
+            const baseTime = baseTimes[level];
+            const ratio = baseTime / time;
+            if (ratio >= 2) return { stars: 5, comment: '超级厉害呢!' };
+            if (ratio >= 1.5) return { stars: 4, comment: '好棒呀!' };
+            if (ratio >= 1) return { stars: 3, comment: '做得很棒呢' };
+            if (ratio >= 0.7) return { stars: 2, comment: '不错哦~' };
+            return { stars: 1, comment: '完成啦!棒棒的' };
+        }
+
+        function showMessage(text, type) {
+            let msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            let msg = document.getElementById('message');
+            msg.className = 'message';
+            msg.textContent = '';
+        }
+
+        function init() {
+            updateContinueButton();
+            loadRecords();
+        }
+
+        init();
+    </script>
+</body>
+</html>

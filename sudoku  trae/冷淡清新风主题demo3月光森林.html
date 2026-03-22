@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷淡清新风 - 方案三：月光森林</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(180deg, #0c1222 0%, #1e293b 40%, #0f172a 100%);
+        }
+
+        .forest-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .moon {
+            position: fixed;
+            top: 8%;
+            right: 12%;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fef9c3, #fde68a, #fbbf24);
+            box-shadow: 
+                0 0 40px rgba(251, 191, 36, 0.6),
+                0 0 80px rgba(251, 191, 36, 0.4),
+                0 0 120px rgba(251, 191, 36, 0.2);
+            animation: moon-glow 4s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes moon-glow {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 40px rgba(251, 191, 36, 0.6),
+                    0 0 80px rgba(251, 191, 36, 0.4);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 60px rgba(251, 191, 36, 0.8),
+                    0 0 100px rgba(251, 191, 36, 0.5),
+                    0 0 140px rgba(251, 191, 36, 0.3);
+            }
+        }
+
+        .moonbeam {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                radial-gradient(ellipse at 85% 15%, rgba(254, 249, 195, 0.25) 0%, transparent 45%),
+                radial-gradient(ellipse at 75% 25%, rgba(224, 231, 255, 0.15) 0%, transparent 55%);
+            animation: moonbeam-shimmer 5s ease-in-out infinite;
+        }
+
+        @keyframes moonbeam-shimmer {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        .firefly {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fef9c3;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 10px #fef9c3,
+                0 0 20px rgba(254, 249, 195, 0.8),
+                0 0 30px rgba(254, 249, 195, 0.5);
+            animation: firefly-float 6s ease-in-out infinite;
+        }
+
+        @keyframes firefly-float {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1); 
+                opacity: 0.3; 
+            }
+            25% { 
+                transform: translate(20px, -30px) scale(1.2); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: translate(-10px, -15px) scale(0.8); 
+                opacity: 0.6; 
+            }
+            75% { 
+                transform: translate(15px, -25px) scale(1.1); 
+                opacity: 0.9; 
+            }
+        }
+
+        .firefly:nth-child(1) { top: 25%; left: 15%; animation-delay: 0s; width: 5px; height: 5px; }
+        .firefly:nth-child(2) { top: 40%; left: 80%; animation-delay: 1s; }
+        .firefly:nth-child(3) { top: 55%; left: 25%; animation-delay: 2s; width: 7px; height: 7px; }
+        .firefly:nth-child(4) { top: 70%; left: 75%; animation-delay: 0.5s; }
+        .firefly:nth-child(5) { top: 30%; left: 60%; animation-delay: 1.5s; width: 5px; height: 5px; }
+        .firefly:nth-child(6) { top: 65%; left: 40%; animation-delay: 2.5s; }
+        .firefly:nth-child(7) { top: 45%; left: 10%; animation-delay: 3s; width: 6px; height: 6px; }
+        .firefly:nth-child(8) { top: 80%; left: 85%; animation-delay: 0.8s; }
+        .firefly:nth-child(9) { top: 20%; left: 45%; animation-delay: 1.8s; width: 4px; height: 4px; }
+        .firefly:nth-child(10) { top: 75%; left: 30%; animation-delay: 2.8s; }
+
+        .tree {
+            position: absolute;
+            bottom: 0;
+            z-index: 0;
+        }
+
+        .tree-trunk {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #4b5563, #374151);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tree-foliage {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 50px solid #166534;
+        }
+
+        .tree:nth-child(1) { left: 3%; transform: scale(1.2); }
+        .tree:nth-child(1) .tree-trunk { width: 12px; height: 40px; }
+        .tree:nth-child(1) .tree-foliage { 
+            bottom: 35px; 
+            border-left-width: 35px; 
+            border-right-width: 35px; 
+            border-bottom-width: 60px;
+            border-bottom-color: #15803d;
+        }
+
+        .tree:nth-child(2) { left: 10%; transform: scale(0.9); }
+        .tree:nth-child(2) .tree-trunk { width: 10px; height: 35px; }
+        .tree:nth-child(2) .tree-foliage { 
+            bottom: 30px; 
+            border-left-width: 28px; 
+            border-right-width: 28px; 
+            border-bottom-width: 50px;
+            border-bottom-color: #166534;
+        }
+
+        .tree:nth-child(3) { left: 85%; transform: scale(1.1); }
+        .tree:nth-child(3) .tree-trunk { width: 11px; height: 38px; }
+        .tree:nth-child(3) .tree-foliage { 
+            bottom: 33px; 
+            border-left-width: 32px; 
+            border-right-width: 32px; 
+            border-bottom-width: 55px;
+            border-bottom-color: #14532d;
+        }
+
+        .tree:nth-child(4) { left: 92%; transform: scale(0.8); }
+        .tree:nth-child(4) .tree-trunk { width: 9px; height: 30px; }
+        .tree:nth-child(4) .tree-foliage { 
+            bottom: 26px; 
+            border-left-width: 25px; 
+            border-right-width: 25px; 
+            border-bottom-width: 45px;
+            border-bottom-color: #16a34a;
+        }
+
+        .mist {
+            position: fixed;
+            width: 200%;
+            height: 100px;
+            bottom: 0;
+            left: -50%;
+            background: linear-gradient(180deg, transparent, rgba(226, 232, 240, 0.3));
+            animation: mist-drift 12s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .mist:nth-child(2) {
+            height: 80px;
+            bottom: 50px;
+            opacity: 0.5;
+            animation-duration: 15s;
+            animation-delay: -5s;
+            background: linear-gradient(180deg, transparent, rgba(203, 213, 225, 0.25));
+        }
+
+        @keyframes mist-drift {
+            0%, 100% { transform: translateX(-5%) skewX(-2deg); }
+            50% { transform: translateX(5%) skewX(2deg); }
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            animation: star-twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes star-twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .star:nth-child(1) { top: 8%; left: 12%; animation-delay: 0s; }
+        .star:nth-child(2) { top: 15%; left: 35%; animation-delay: 0.5s; width: 3px; height: 3px; }
+        .star:nth-child(3) { top: 22%; left: 55%; animation-delay: 1s; }
+        .star:nth-child(4) { top: 10%; left: 70%; animation-delay: 1.5s; width: 2px; height: 2px; }
+        .star:nth-child(5) { top: 18%; left: 88%; animation-delay: 2s; }
+        .star:nth-child(6) { top: 5%; left: 25%; animation-delay: 0.3s; width: 3px; height: 3px; }
+        .star:nth-child(7) { top: 20%; left: 8%; animation-delay: 0.8s; }
+        .star:nth-child(8) { top: 12%; left: 48%; animation-delay: 1.3s; width: 2px; height: 2px; }
+        .star:nth-child(9) { top: 25%; left: 78%; animation-delay: 1.8s; }
+        .star:nth-child(10) { top: 7%; left: 92%; animation-delay: 2.3s; width: 3px; height: 3px; }
+
+        .game-container {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.88));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 480px;
+            width: 92%;
+            box-shadow: 
+                0 8px 32px rgba(15, 23, 42, 0.4),
+                0 1px 3px rgba(15, 23, 42, 0.2),
+                inset 0 1px 0 rgba(148, 163, 184, 0.3),
+                0 0 60px rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, transparent 50%, rgba(148, 163, 184, 0.06) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 300;
+            color: #e5e7eb;
+            margin-bottom: 30px;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #e5e7eb, #fef9c3, #e5e7eb);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: title-moon 6s ease-in-out infinite;
+        }
+
+        @keyframes title-moon {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .demo-box {
+            padding: 30px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.92));
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            text-align: center;
+            color: #cbd5e1;
+            font-size: 15px;
+        }
+
+        .scheme-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 400;
+            color: #e5e7eb;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(148, 163, 184, 0.08));
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            letter-spacing: 3px;
+        }
+        
+        .demo-box p {
+            margin: 16px 0;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="moonbeam"></div>
+    <div class="moon"></div>
+    
+    <div class="forest-bg">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        
+        <div class="tree">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+        </div>
+        <div class="tree">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+        </div>
+        <div class="tree">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+        </div>
+        <div class="tree">
+            <div class="tree-trunk"></div>
+            <div class="tree-foliage"></div>
+        </div>
+    </div>
+    
+    <div class="mist"></div>
+    <div class="mist"></div>
+
+    <div class="game-container">
+        <h1 class="title">数独</h1>
+        <div class="scheme-name">🌙 方案三：月光森林 🌙</div>
+        <div class="demo-box">
+            <p>🌙 明月缓缓发光</p>
+            <p>✨ 萤火虫飞舞</p>
+            <p>🌲 森林剪影环绕</p>
+            <p>🌫️ 薄雾轻轻流动</p>
+            <p>⭐ 星光点点闪烁</p>
+        </div>
+    </div>
+</body>
+</html>

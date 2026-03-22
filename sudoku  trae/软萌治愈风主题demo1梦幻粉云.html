@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软萌治愈风 - 云朵方案一：梦幻粉云</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'M PLUS Rounded 1c', 'PingFang SC', sans-serif;
+            overflow: hidden;
+            position: relative;
+            
+            background: linear-gradient(180deg, #FFE4EC 0%, #FFF0F5 40%, #F5F0FF 100%);
+        }
+
+        /* 金色星星 */
+        .star {
+            position: fixed;
+            font-size: 32px;
+            pointer-events: none;
+            z-index: 1;
+            animation: twinkle 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+            color: #FFD700;
+        }
+        .star:nth-child(1) { top: 12%; left: 15%; animation-delay: 0s; }
+        .star:nth-child(2) { top: 25%; right: 18%; animation-delay: 0.7s; font-size: 26px; }
+        .star:nth-child(3) { bottom: 35%; left: 22%; animation-delay: 1.4s; font-size: 28px; }
+        .star:nth-child(4) { top: 18%; right: 35%; animation-delay: 2.1s; font-size: 24px; }
+        .star:nth-child(5) { bottom: 45%; right: 12%; animation-delay: 0.3s; font-size: 30px; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.25); }
+        }
+
+        /* 逼真云朵 - 从左侧滑入 + 上下浮动 */
+        .cloud {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .cloud-body {
+            position: relative;
+            width: 180px;
+            height: 70px;
+        }
+        
+        .cloud-body::before,
+        .cloud-body::after,
+        .cloud-part {
+            content: '';
+            position: absolute;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFF8FA 100%);
+            border-radius: 50px;
+            box-shadow: 
+                inset -5px -5px 15px rgba(255, 182, 193, 0.08),
+                0 15px 35px rgba(255, 182, 193, 0.4);
+        }
+        
+        /* 云朵1 */
+        .cloud-1 .c1 { width: 70px; height: 70px; top: -32px; left: 8px; }
+        .cloud-1 .c2 { width: 90px; height: 80px; top: -40px; left: 40px; }
+        .cloud-1 .c3 { width: 60px; height: 55px; top: -22px; left: 100px; }
+        .cloud-1 .c4 { width: 50px; height: 45px; top: -12px; left: 135px; }
+        .cloud-1 .c5 { width: 80px; height: 50px; top: -8px; left: 52px; border-radius: 35px; }
+        
+        .cloud-1 { 
+            top: 8%; 
+            left: -250px;
+            animation: cloud-move-1 55s linear infinite;
+            filter: drop-shadow(0 20px 40px rgba(255, 182, 193, 0.5)); 
+        }
+        
+        @keyframes cloud-move-1 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-20px); }
+            50% { transform: translateY(15px); }
+            75% { transform: translateY(-25px); }
+            100% { left: 120vw; transform: translateY(10px); }
+        }
+        
+        /* 云朵2 */
+        .cloud-2 .c1 { width: 65px; height: 65px; top: -28px; left: 5px; }
+        .cloud-2 .c2 { width: 82px; height: 75px; top: -36px; left: 35px; }
+        .cloud-2 .c3 { width: 55px; height: 50px; top: -20px; left: 90px; }
+        .cloud-2 .c4 { width: 45px; height: 40px; top: -10px; left: 122px; }
+        .cloud-2 .c5 { width: 72px; height: 45px; top: -6px; left: 45px; border-radius: 30px; }
+        
+        .cloud-2 { 
+            top: 22%; 
+            left: -250px;
+            animation: cloud-move-2 60s linear infinite;
+            animation-delay: -15s;
+            filter: drop-shadow(0 20px 40px rgba(135, 206, 235, 0.45)); 
+        }
+        .cloud-2 .cloud-body::before, .cloud-2 .cloud-body::after, .cloud-2 .cloud-part { background: linear-gradient(180deg, #FFFFFF 0%, #F5FAFF 100%); box-shadow: inset -5px -5px 15px rgba(135, 206, 235, 0.08), 0 15px 35px rgba(135, 206, 235, 0.35); }
+        
+        @keyframes cloud-move-2 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-18px); }
+            50% { transform: translateY(20px); }
+            75% { transform: translateY(-22px); }
+            100% { left: 120vw; transform: translateY(12px); }
+        }
+        
+        /* 云朵3 */
+        .cloud-3 .c1 { width: 68px; height: 68px; top: -30px; left: 6px; }
+        .cloud-3 .c2 { width: 85px; height: 78px; top: -38px; left: 38px; }
+        .cloud-3 .c3 { width: 58px; height: 52px; top: -21px; left: 95px; }
+        .cloud-3 .c4 { width: 48px; height: 42px; top: -11px; left: 128px; }
+        .cloud-3 .c5 { width: 75px; height: 48px; top: -7px; left: 48px; border-radius: 32px; }
+        
+        .cloud-3 { 
+            top: 12%; 
+            left: -250px;
+            animation: cloud-move-3 58s linear infinite;
+            animation-delay: -30s;
+            filter: drop-shadow(0 20px 40px rgba(255, 215, 0, 0.4)); 
+        }
+        .cloud-3 .cloud-body::before, .cloud-3 .cloud-body::after, .cloud-3 .cloud-part { background: linear-gradient(180deg, #FFFEF5 0%, #FFF8DC 100%); box-shadow: inset -5px -5px 15px rgba(255, 215, 0, 0.08), 0 15px 35px rgba(255, 215, 0, 0.3); }
+        
+        @keyframes cloud-move-3 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-22px); }
+            50% { transform: translateY(18px); }
+            75% { transform: translateY(-28px); }
+            100% { left: 120vw; transform: translateY(8px); }
+        }
+        
+        /* 云朵4 */
+        .cloud-4 .c1 { width: 72px; height: 72px; top: -33px; left: 10px; }
+        .cloud-4 .c2 { width: 88px; height: 82px; top: -42px; left: 42px; }
+        .cloud-4 .c3 { width: 62px; height: 56px; top: -23px; left: 105px; }
+        .cloud-4 .c4 { width: 52px; height: 46px; top: -13px; left: 142px; }
+        .cloud-4 .c5 { width: 78px; height: 50px; top: -9px; left: 55px; border-radius: 34px; }
+        
+        .cloud-4 { 
+            top: 45%; 
+            left: -250px;
+            animation: cloud-move-4 62s linear infinite;
+            animation-delay: -45s;
+            filter: drop-shadow(0 20px 40px rgba(221, 160, 221, 0.45)); 
+        }
+        .cloud-4 .cloud-body::before, .cloud-4 .cloud-body::after, .cloud-4 .cloud-part { background: linear-gradient(180deg, #FFFFFF 0%, #FAF0FF 100%); box-shadow: inset -5px -5px 15px rgba(221, 160, 221, 0.08), 0 15px 35px rgba(221, 160, 221, 0.35); }
+        
+        @keyframes cloud-move-4 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-15px); }
+            50% { transform: translateY(22px); }
+            75% { transform: translateY(-20px); }
+            100% { left: 120vw; transform: translateY(15px); }
+        }
+        
+        /* 云朵5 */
+        .cloud-5 .c1 { width: 66px; height: 66px; top: -29px; left: 7px; }
+        .cloud-5 .c2 { width: 80px; height: 74px; top: -35px; left: 36px; }
+        .cloud-5 .c3 { width: 54px; height: 48px; top: -18px; left: 88px; }
+        .cloud-5 .c4 { width: 44px; height: 38px; top: -9px; left: 118px; }
+        .cloud-5 .c5 { width: 70px; height: 44px; top: -5px; left: 44px; border-radius: 28px; }
+        
+        .cloud-5 { 
+            top: 35%; 
+            left: -250px;
+            animation: cloud-move-5 57s linear infinite;
+            animation-delay: -20s;
+            filter: drop-shadow(0 20px 40px rgba(255, 182, 193, 0.5)); 
+        }
+        
+        @keyframes cloud-move-5 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-25px); }
+            50% { transform: translateY(12px); }
+            75% { transform: translateY(-18px); }
+            100% { left: 120vw; transform: translateY(20px); }
+        }
+        
+        /* 云朵6 */
+        .cloud-6 .c1 { width: 70px; height: 70px; top: -31px; left: 9px; }
+        .cloud-6 .c2 { width: 86px; height: 78px; top: -39px; left: 40px; }
+        .cloud-6 .c3 { width: 58px; height: 52px; top: -20px; left: 98px; }
+        .cloud-6 .c4 { width: 48px; height: 42px; top: -11px; left: 132px; }
+        .cloud-6 .c5 { width: 76px; height: 48px; top: -7px; left: 50px; border-radius: 32px; }
+        
+        .cloud-6 { 
+            bottom: 15%; 
+            left: -250px;
+            animation: cloud-move-6 63s linear infinite;
+            animation-delay: -35s;
+            filter: drop-shadow(0 20px 40px rgba(135, 206, 235, 0.45)); 
+        }
+        .cloud-6 .cloud-body::before, .cloud-6 .cloud-body::after, .cloud-6 .cloud-part { background: linear-gradient(180deg, #FFFFFF 0%, #F5FAFF 100%); box-shadow: inset -5px -5px 15px rgba(135, 206, 235, 0.08), 0 15px 35px rgba(135, 206, 235, 0.35); }
+        
+        @keyframes cloud-move-6 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-20px); }
+            50% { transform: translateY(25px); }
+            75% { transform: translateY(-15px); }
+            100% { left: 120vw; transform: translateY(10px); }
+        }
+        
+        /* 云朵7 */
+        .cloud-7 .c1 { width: 64px; height: 64px; top: -27px; left: 6px; }
+        .cloud-7 .c2 { width: 78px; height: 72px; top: -34px; left: 34px; }
+        .cloud-7 .c3 { width: 52px; height: 46px; top: -17px; left: 84px; }
+        .cloud-7 .c4 { width: 42px; height: 36px; top: -8px; left: 112px; }
+        .cloud-7 .c5 { width: 68px; height: 42px; top: -4px; left: 42px; border-radius: 26px; }
+        
+        .cloud-7 { 
+            bottom: 25%; 
+            left: -250px;
+            animation: cloud-move-7 59s linear infinite;
+            animation-delay: -50s;
+            filter: drop-shadow(0 20px 40px rgba(255, 215, 0, 0.4)); 
+        }
+        .cloud-7 .cloud-body::before, .cloud-7 .cloud-body::after, .cloud-7 .cloud-part { background: linear-gradient(180deg, #FFFEF5 0%, #FFF8DC 100%); box-shadow: inset -5px -5px 15px rgba(255, 215, 0, 0.08), 0 15px 35px rgba(255, 215, 0, 0.3); }
+        
+        @keyframes cloud-move-7 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-22px); }
+            50% { transform: translateY(18px); }
+            75% { transform: translateY(-25px); }
+            100% { left: 120vw; transform: translateY(12px); }
+        }
+        
+        /* 云朵8 */
+        .cloud-8 .c1 { width: 68px; height: 68px; top: -30px; left: 8px; }
+        .cloud-8 .c2 { width: 84px; height: 76px; top: -38px; left: 38px; }
+        .cloud-8 .c3 { width: 56px; height: 50px; top: -19px; left: 94px; }
+        .cloud-8 .c4 { width: 46px; height: 40px; top: -10px; left: 126px; }
+        .cloud-8 .c5 { width: 74px; height: 46px; top: -6px; left: 48px; border-radius: 30px; }
+        
+        .cloud-8 { 
+            top: 60%; 
+            left: -250px;
+            animation: cloud-move-8 61s linear infinite;
+            animation-delay: -25s;
+            filter: drop-shadow(0 20px 40px rgba(221, 160, 221, 0.45)); 
+        }
+        .cloud-8 .cloud-body::before, .cloud-8 .cloud-body::after, .cloud-8 .cloud-part { background: linear-gradient(180deg, #FFFFFF 0%, #FAF0FF 100%); box-shadow: inset -5px -5px 15px rgba(221, 160, 221, 0.08), 0 15px 35px rgba(221, 160, 221, 0.35); }
+        
+        @keyframes cloud-move-8 {
+            0% { left: -250px; transform: translateY(0); }
+            25% { transform: translateY(-18px); }
+            50% { transform: translateY(22px); }
+            75% { transform: translateY(-20px); }
+            100% { left: 120vw; transform: translateY(15px); }
+        }
+
+        /* 喷涌爱心 - 奶油风格粉色 */
+        .heart-burst {
+            position: fixed;
+            pointer-events: none;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .burst-heart {
+            position: absolute;
+            font-size: 36px;
+            filter: drop-shadow(0 4px 10px rgba(255, 220, 230, 0.9));
+            animation: burst 2.5s ease-out infinite;
+            transform-origin: center;
+            color: #FFD1DC;
+        }
+        
+        .burst-heart:nth-child(1) { left: 8%; top: 15%; animation-delay: 0s; }
+        .burst-heart:nth-child(2) { left: 20%; top: 45%; animation-delay: 0.4s; font-size: 32px; }
+        .burst-heart:nth-child(3) { left: 35%; top: 25%; animation-delay: 0.8s; font-size: 40px; }
+        .burst-heart:nth-child(4) { left: 50%; top: 55%; animation-delay: 1.2s; font-size: 28px; }
+        .burst-heart:nth-child(5) { left: 62%; top: 20%; animation-delay: 1.6s; font-size: 38px; }
+        .burst-heart:nth-child(6) { left: 75%; top: 50%; animation-delay: 2s; font-size: 30px; }
+        .burst-heart:nth-child(7) { left: 88%; top: 30%; animation-delay: 2.4s; font-size: 34px; }
+        .burst-heart:nth-child(8) { left: 12%; top: 70%; animation-delay: 0.6s; font-size: 28px; }
+        .burst-heart:nth-child(9) { left: 45%; top: 75%; animation-delay: 1s; font-size: 32px; }
+        .burst-heart:nth-child(10) { left: 78%; top: 72%; animation-delay: 1.4s; font-size: 36px; }
+        
+        @keyframes burst {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.2) rotate(-25deg);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(0) scale(1.4) rotate(15deg);
+            }
+            40% {
+                transform: translateY(-20px) scale(1.1) rotate(-12deg);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(-5px) scale(1.2) rotate(10deg);
+            }
+            80% {
+                opacity: 0.6;
+                transform: translateY(-10px) scale(0.9) rotate(-5deg);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-45px) scale(0.3) rotate(0deg);
+            }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 40px;
+            padding: 50px;
+            max-width: 480px;
+            width: 92%;
+            box-shadow: 
+                0 35px 90px rgba(255, 182, 193, 0.35),
+                0 18px 40px rgba(255, 182, 193, 0.22),
+                inset 0 2px 0 rgba(255, 255, 255, 1);
+            border: 5px solid rgba(255, 220, 235, 0.9);
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-container::before {
+            content: '☁     ☁     ☁     ☁';
+            position: absolute;
+            top: 14px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 18px;
+            color: rgba(255, 182, 193, 0.7);
+            letter-spacing: 25px;
+            pointer-events: none;
+        }
+
+        .game-container::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 3px dashed rgba(255, 182, 193, 0.55);
+            border-radius: 34px;
+            pointer-events: none;
+        }
+
+        .corner-cloud {
+            position: absolute;
+            font-size: 32px;
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: 11;
+            filter: drop-shadow(0 2px 4px rgba(255, 182, 193, 0.4));
+        }
+        .corner-cloud.tl { top: -14px; left: -10px; }
+        .corner-cloud.tr { top: -14px; right: -10px; }
+        .corner-cloud.bl { bottom: -14px; left: -10px; }
+        .corner-cloud.br { bottom: -14px; right: -10px; }
+
+        .title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: #9B7B7B;
+            margin: 35px 0 30px;
+            letter-spacing: 8px;
+            text-shadow: 2px 2px 6px rgba(255, 182, 193, 0.35);
+        }
+
+        .title span { 
+            color: #FF8FA3;
+            text-shadow: 2px 2px 6px rgba(255, 143, 163, 0.5);
+        }
+
+        .demo-box {
+            padding: 28px;
+            background: linear-gradient(145deg, #FFFFFF, #FFF8FA);
+            border-radius: 28px;
+            border: 3px solid rgba(255, 220, 235, 0.7);
+            text-align: center;
+            color: #9B7B7B;
+            font-size: 16px;
+        }
+
+        .scheme-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #FF6B7A;
+            margin-bottom: 22px;
+            padding: 14px;
+            background: linear-gradient(135deg, #FFF0F5, #FFE4EC);
+            border-radius: 16px;
+            border: 3px solid rgba(255, 182, 193, 0.5);
+        }
+        
+        .demo-box p {
+            margin: 14px 0;
+            font-size: 17px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 金色星星 -->
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+    
+    <!-- 8个云朵 - 从左侧滑入 -->
+    <div class="cloud cloud-1"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-2"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-3"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-4"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-5"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-6"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-7"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    <div class="cloud cloud-8"><div class="cloud-body"><span class="cloud-part c1"></span><span class="cloud-part c2"></span><span class="cloud-part c3"></span><span class="cloud-part c4"></span><span class="cloud-part c5"></span></div></div>
+    
+    <!-- 10个奶油粉爱心 -->
+    <div class="heart-burst">
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+        <span class="burst-heart">♡</span>
+    </div>
+
+    <div class="game-container">
+        <span class="corner-cloud tl">☁</span>
+        <span class="corner-cloud tr">☁</span>
+        <span class="corner-cloud bl">☁</span>
+        <span class="corner-cloud br">☁</span>
+        
+        <h1 class="title">数<span>独</span></h1>
+        <div class="scheme-name">☁ 方案一：8云朵+10奶油粉爱心 ☁</div>
+        <div class="demo-box">
+            <p>☁ 8个云朵从左侧滑入+上下浮动</p>
+            <p>✦ 金色星星闪烁</p>
+            <p>♡ 奶油粉爱心喷涌惊喜</p>
+        </div>
+    </div>
+</body>
+</html>

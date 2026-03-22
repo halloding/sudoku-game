@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 v1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title span {
+            color: #667eea;
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #333;
+            border: 3px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .cell:nth-child(3n) {
+            border-right: 2px solid #333;
+        }
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #333;
+        }
+
+        .cell.initial {
+            background: #e8e8e8;
+            color: #333;
+            cursor: default;
+        }
+
+        .cell.input-cell {
+            background: #fff;
+            color: #2196f3;
+        }
+
+        .cell.error {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .cell:focus-within,
+        .cell.inputting {
+            outline: 2px solid #2196f3;
+            outline-offset: -2px;
+            z-index: 1;
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2196f3;
+            background: transparent;
+            outline: none;
+            padding: 0;
+            caret-color: #2196f3;
+        }
+
+        .cell.initial input {
+            color: #333;
+            background: transparent;
+        }
+
+        .cell.error input {
+            color: #f44336;
+            background: #ffebee;
+        }
+
+        .difficulty-section {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            background: #f5f5f5;
+        }
+
+        .difficulty-option:hover {
+            background: #e0e0e0;
+        }
+
+        .difficulty-option.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .difficulty-option input {
+            display: none;
+        }
+
+        .difficulty-option .radio {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #999;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .difficulty-option.selected .radio {
+            border-color: white;
+        }
+
+        .difficulty-option.selected .radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-new {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .message.error {
+            display: block;
+            background: #ffebee;
+c62828;
+            color: #        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .cell, .cell input {
+                font-size: 18px;
+            }
+
+            .button-section {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">数<span>独</span>游戏 v1</h1>
+        
+        <div class="sudoku-board" id="board"></div>
+
+        <div class="difficulty-section">
+            <label class="difficulty-option selected" data-level="easy">
+                <input type="radio" name="difficulty" value="easy" checked>
+                <span class="radio"></span>
+                <span>简单</span>
+            </label>
+            <label class="difficulty-option" data-level="medium">
+                <input type="radio" name="difficulty" value="medium">
+                <span class="radio"></span>
+                <span>中等</span>
+            </label>
+            <label class="difficulty-option" data-level="hard">
+                <input type="radio" name="difficulty" value="hard">
+                <span class="radio"></span>
+                <span>困难</span>
+            </label>
+        </div>
+
+        <div class="button-section">
+            <button class="btn btn-new" onclick="newGame()">新游戏</button>
+            <button class="btn btn-check" onclick="checkAnswer()">检查答案</button>
+            <button class="btn btn-clear" onclick="clearInput()">清空输入</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        let solution = [];
+        let puzzle = [];
+        let currentLevel = 'easy';
+
+        function init() {
+            document.querySelectorAll('.difficulty-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.difficulty-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    currentLevel = this.dataset.level;
+                });
+            });
+            newGame();
+        }
+
+        function newGame() {
+            solution = generateSolvedSudoku();
+            puzzle = createPuzzle(solution, currentLevel);
+            renderBoard();
+            hideMessage();
+        }
+
+        function generateSolvedSudoku() {
+            let board = Array(9).fill(null).map(() => Array(9).fill(0));
+            solveSudoku(board);
+            return board;
+        }
+
+        function solveSudoku(board) {
+            let empty = findEmpty(board);
+            if (!empty) return true;
+            let [row, col] = empty;
+            let nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            for (let num of nums) {
+                if (isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    if (solveSudoku(board)) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        function findEmpty(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) return [row, col];
+                }
+            }
+            return null;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let c = 0; c < 9; c++) {
+                if (board[row][c] === num) return false;
+            }
+            for (let r = 0; r < 9; r++) {
+                if (board[r][col] === num) return false;
+            }
+            let startRow = Math.floor(row / 3) * 3;
+            let startCol = Math.floor(col / 3) * 3;
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if (board[r][c] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function shuffleArray(arr) {
+            let result = [...arr];
+            for (let i = result.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+
+        function createPuzzle(solution, level) {
+            let puzzle = solution.map(row => [...row]);
+            let removeCount;
+            switch(level) {
+                case 'easy': removeCount = 35 + Math.floor(Math.random() * 6); break;
+                case 'medium': removeCount = 45 + Math.floor(Math.random() * 6); break;
+                case 'hard': removeCount = 55 + Math.floor(Math.random() * 6); break;
+                default: removeCount = 35;
+            }
+            let positions = shuffleArray([...Array(81).keys()]);
+            for (let i = 0; i < removeCount; i++) {
+                let pos = positions[i];
+                let row = Math.floor(pos / 9);
+                let col = pos % 9;
+                puzzle[row][col] = 0;
+            }
+            return puzzle;
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    let value = puzzle[row][col];
+                    if (value !== 0) {
+                        cell.classList.add('initial');
+                        cell.textContent = value;
+                    } else {
+                        cell.classList.add('input-cell');
+                        let input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.inputMode = 'numeric';
+                        input.addEventListener('input', function(e) {
+                            this.value = this.value.replace(/[^1-9]/g, '');
+                            if (this.value.length > 1) {
+                                this.value = this.value.charAt(0);
+                            }
+                            cell.classList.remove('error');
+                        });
+                        input.addEventListener('keydown', function(e) {
+                            handleKeyDown(e, row, col);
+                        });
+                        cell.appendChild(input);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function handleKeyDown(e, row, col) {
+            let newRow = row, newCol = col;
+            switch(e.key) {
+                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                case 'ArrowDown': newRow = Math.min(8, row + 1); break;
+                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                case 'ArrowRight': newCol = Math.min(8, col + 1); break;
+                default: return;
+            }
+            if (newRow !== row || newCol !== col) {
+                e.preventDefault();
+                let nextCell = document.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"] input`);
+                if (nextCell) nextCell.focus();
+            }
+        }
+
+        function checkAnswer() {
+            let hasError = false;
+            let allFilled = true;
+            let cells = document.querySelectorAll('.cell.input-cell');
+            cells.forEach(cell => {
+                let input = cell.querySelector('input');
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col);
+                let value = parseInt(input.value) || 0;
+                if (value === 0) allFilled = false;
+                if (value !== 0 && value !== solution[row][col]) {
+                    cell.classList.add('error');
+                    hasError = true;
+                } else {
+                    cell.classList.remove('error');
+                }
+            });
+            if (!hasError && allFilled) {
+                showMessage('恭喜你！答案正确！', 'success');
+            } else if (hasError) {
+                showMessage('存在错误，请检查红色标记的格子', 'error');
+            } else if (!allFilled) {
+                showMessage('棋盘未填满，请继续加油！', 'error');
+            }
+        }
+
+        function clearInput() {
+            let cells = document.querySelectorAll('.cell.input-cell');
+            cells.forEach(cell => {
+                let input = cell.querySelector('input');
+                input.value = '';
+                cell.classList.remove('error');
+            });
+            hideMessage();
+        }
+
+        function showMessage(text, type) {
+            let msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            let msg = document.getElementById('message');
+            msg.className = 'message';
+            msg.textContent = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 v3.6 冷调科技风</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Microsoft YaHei', monospace;
+            background: #0D1117;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(ellipse at top, #161B22 0%, #0D1117 50%),
+                linear-gradient(180deg, #0D1117 0%, #010409 100%);
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .game-container {
+            background: linear-gradient(180deg, #161B22 0%, #0D1117 100%);
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 
+                0 0 0 1px rgba(79, 195, 247, 0.1),
+                0 0 40px rgba(0, 229, 255, 0.05);
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #4FC3F7, transparent);
+            opacity: 0.5;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #00E5FF;
+            margin-bottom: 28px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+        }
+
+        .title span {
+            color: #4FC3F7;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+        }
+
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .home-btn {
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8B949E;
+            letter-spacing: 3px;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.1), transparent);
+            transition: left 0.4s;
+        }
+
+        .home-btn:hover::before {
+            left: 100%;
+        }
+
+        .home-btn:hover {
+            color: #00E5FF;
+            border-color: #4FC3F7;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.15);
+        }
+
+        .home-btn.disabled {
+            color: #484F58;
+            border-color: #21262D;
+            cursor: not-allowed;
+        }
+
+        .difficulty-screen {
+            text-align: center;
+        }
+
+        .difficulty-screen h2 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #4FC3F7;
+            margin-bottom: 28px;
+            letter-spacing: 4px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .diff-btn {
+            padding: 14px 24px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8B949E;
+            letter-spacing: 3px;
+            background: transparent;
+        }
+
+        .diff-btn:hover {
+            color: #00E5FF;
+            border-color: #4FC3F7;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.1);
+        }
+
+        .diff-btn.easy:hover {
+            color: #3FB950;
+            border-color: #3FB950;
+            box-shadow: 0 0 15px rgba(63, 185, 80, 0.2);
+        }
+
+        .diff-btn.medium:hover {
+            color: #D29922;
+            border-color: #D29922;
+            box-shadow: 0 0 15px rgba(210, 153, 34, 0.2);
+        }
+
+        .diff-btn.hard:hover {
+            color: #F85149;
+            border-color: #F85149;
+            box-shadow: 0 0 15px rgba(248, 81, 73, 0.2);
+        }
+
+        .back-btn {
+            margin-top: 24px;
+            padding: 12px 24px;
+            font-size: 13px;
+            font-weight: 400;
+            background: transparent;
+            color: #6E7681;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 2px;
+        }
+
+        .back-btn:hover {
+            color: #8B949E;
+            border-color: #484F58;
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #00E5FF;
+            margin-bottom: 16px;
+            padding: 14px;
+            background: rgba(0, 229, 255, 0.05);
+            border-radius: 4px;
+            letter-spacing: 6px;
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .level-badge {
+            padding: 6px 14px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            color: #4FC3F7;
+            background: rgba(79, 195, 247, 0.1);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #21262D;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.05);
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 500;
+            background: #0D1117;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #C9D1D9;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cell:nth-child(3n) {
+            border-right: 1px solid #30363D;
+        }
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 1px solid #30363D;
+        }
+
+        .cell.initial {
+            background: #161B22;
+            color: #6E7681;
+        }
+
+        .cell.input-cell {
+            background: #0D1117;
+            color: #58A6FF;
+        }
+
+        .cell.error {
+            background: rgba(248, 81, 73, 0.1);
+            color: #F85149;
+            animation: glitch 0.3s ease;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        .cell:focus-within {
+            outline: 1px solid #00E5FF;
+            outline-offset: -1px;
+            z-index: 1;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #58A6FF;
+            background: transparent;
+            outline: none;
+            padding: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cell.initial input {
+            color: #6E7681;
+        }
+
+        .cell.error input {
+            color: #F85149;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8B949E;
+            letter-spacing: 2px;
+            background: transparent;
+        }
+
+        .btn:hover {
+            color: #00E5FF;
+            border-color: #4FC3F7;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.1);
+        }
+
+        .btn-quit {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: rgba(63, 185, 80, 0.1);
+            color: #3FB950;
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .message.error {
+            display: block;
+            background: rgba(248, 81, 73, 0.1);
+            color: #F85149;
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .victory-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .victory-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 8px;
+            background: linear-gradient(90deg, #00E5FF, #4FC3F7, #00E5FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 100%;
+            animation: scanline 2s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .victory-stats {
+            background: rgba(79, 195, 247, 0.05);
+            border-radius: 6px;
+            padding: 22px;
+            margin: 20px 0;
+            border: 1px solid rgba(79, 195, 247, 0.15);
+        }
+
+        .stat-item {
+            margin: 14px 0;
+            font-size: 13px;
+            color: #6E7681;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00E5FF;
+            display: block;
+            margin-top: 6px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        .ai-score {
+            font-size: 13px;
+            color: #4FC3F7;
+            margin-top: 18px;
+            padding: 16px;
+            background: rgba(79, 195, 247, 0.05);
+            border-radius: 4px;
+            letter-spacing: 2px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+
+        .score-stars {
+            font-size: 24px;
+            margin-top: 10px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+
+        .victory-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .victory-btn {
+            padding: 14px 24px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            border: 1px solid #30363D;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8B949E;
+            background: transparent;
+        }
+
+        .victory-btn:hover {
+            color: #00E5FF;
+            border-color: #4FC3F7;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.15);
+        }
+
+        .records-screen {
+            text-align: center;
+        }
+
+        .records-screen h2 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #4FC3F7;
+            margin-bottom: 24px;
+            letter-spacing: 4px;
+        }
+
+        .record-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .record-card {
+            background: rgba(79, 195, 247, 0.03);
+            border-radius: 4px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #21262D;
+        }
+
+        .record-level {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            padding: 6px 14px;
+            border-radius: 3px;
+            color: #4FC3F7;
+            background: rgba(79, 195, 247, 0.1);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+        }
+
+        .record-time {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00E5FF;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 24px 16px;
+            }
+            .title {
+                font-size: 22px;
+            }
+            .cell, .cell input {
+                font-size: 15px;
+            }
+            .button-section {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="page active" id="homePage">
+            <h1 class="title">SUDOKU</h1>
+            <div class="home-buttons">
+                <button class="home-btn" onclick="showDifficultyScreen()">NEW GAME</button>
+                <button class="home-btn" id="continueBtn" onclick="continueGame()">CONTINUE</button>
+                <button class="home-btn" onclick="showRecords()">RECORDS</button>
+            </div>
+        </div>
+
+        <div class="page" id="difficultyPage">
+            <div class="difficulty-screen">
+                <h2>SELECT DIFFICULTY</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn easy" onclick="startNewGame('easy')">EASY</button>
+                    <button class="diff-btn medium" onclick="startNewGame('medium')">MEDIUM</button>
+                    <button class="diff-btn hard" onclick="startNewGame('hard')">HARD</button>
+                </div>
+                <button class="back-btn" onclick="showHomePage()">BACK</button>
+            </div>
+        </div>
+
+        <div class="page" id="gamePage">
+            <div class="game-header">
+                <div class="level-badge" id="levelBadge">EASY</div>
+                <button class="btn btn-quit" onclick="quitGame()">QUIT</button>
+            </div>
+            <div class="timer-display" id="timer">00:00</div>
+            <div class="sudoku-board" id="board"></div>
+            <div class="button-section">
+                <button class="btn" onclick="restartGame()">NEW</button>
+                <button class="btn" onclick="checkAnswer()">CHECK</button>
+                <button class="btn" onclick="clearInput()">CLEAR</button>
+            </div>
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="page" id="victoryPage">
+            <div class="victory-screen">
+                <div class="victory-title">COMPLETE</div>
+                <div class="victory-stats">
+                    <div class="stat-item">
+                        <span>TIME</span>
+                        <span class="stat-value" id="finalTime">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>LEVEL</span>
+                        <span class="stat-value" id="finalLevel">EASY</span>
+                    </div>
+                </div>
+                <div class="ai-score">
+                    <div>AI SCORE</div>
+                    <div class="score-stars" id="aiStars">★★★★★</div>
+                    <div id="aiComment" style="margin-top:10px;color:#4FC3F7">EXCELLENT</div>
+                </div>
+                <div class="victory-buttons">
+                    <button class="victory-btn" onclick="showHomePage()">HOME</button>
+                    <button class="victory-btn" onclick="startNewGame(currentLevel)">RETRY</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="recordsPage">
+            <div class="records-screen">
+                <h2>RECORDS</h2>
+                <div class="record-cards">
+                    <div class="record-card">
+                        <span class="record-level">EASY</span>
+                        <span class="record-time" id="recordEasy">--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level">MEDIUM</span>
+                        <span class="record-time" id="recordMedium">--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level">HARD</span>
+                        <span class="record-time" id="recordHard">--:--</span>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="showHomePage()" style="margin-top:24px">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let solution = [];
+        let puzzle = [];
+        let currentLevel = 'easy';
+        let gameStarted = false;
+        let savedGame = null;
+        let timerInterval = null;
+        let seconds = 0;
+        let records = { easy: null, medium: null, hard: null };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showHomePage() {
+            stopTimer();
+            updateContinueButton();
+            showPage('homePage');
+        }
+
+        function showDifficultyScreen() {
+            showPage('difficultyPage');
+        }
+
+        function showRecords() {
+            loadRecords();
+            showPage('recordsPage');
+        }
+
+        function loadRecords() {
+            const saved = localStorage.getItem('sudokuRecords');
+            if (saved) records = JSON.parse(saved);
+            document.getElementById('recordEasy').textContent = records.easy ? formatTime(records.easy) : '--:--';
+            document.getElementById('recordMedium').textContent = records.medium ? formatTime(records.medium) : '--:--';
+            document.getElementById('recordHard').textContent = records.hard ? formatTime(records.hard) : '--:--';
+        }
+
+        function saveRecord(level, time) {
+            if (!records[level] || time < records[level]) {
+                records[level] = time;
+                localStorage.setItem('sudokuRecords', JSON.stringify(records));
+            }
+        }
+
+        function updateContinueButton() {
+            const btn = document.getElementById('continueBtn');
+            const saved = localStorage.getItem('sudokuSavedGame');
+            if (saved) {
+                savedGame = JSON.parse(saved);
+                btn.classList.remove('disabled');
+            } else {
+                btn.classList.add('disabled');
+            }
+        }
+
+        function continueGame() {
+            if (!savedGame) return;
+            solution = savedGame.solution;
+            puzzle = savedGame.puzzle;
+            currentLevel = savedGame.level;
+            seconds = savedGame.seconds;
+            renderBoard(savedGame.userInput);
+            startTimer();
+            updateLevelBadge();
+            showPage('gamePage');
+        }
+
+        function startNewGame(level) {
+            currentLevel = level;
+            solution = generateSolvedSudoku();
+            puzzle = createPuzzle(solution, level);
+            renderBoard({});
+            startTimer();
+            updateLevelBadge();
+            saveGame({});
+            showPage('gamePage');
+        }
+
+        function restartGame() {
+            startNewGame(currentLevel);
+        }
+
+        function quitGame() {
+            showHomePage();
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                seconds++;
+                document.getElementById('timer').textContent = formatTime(seconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60).toString().padStart(2, '0');
+            const s = (secs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateLevelBadge() {
+            const badge = document.getElementById('levelBadge');
+            const levels = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+            badge.textContent = levels[currentLevel];
+        }
+
+        function saveGame(userInput) {
+            savedGame = {
+                solution: solution,
+                puzzle: puzzle,
+                level: currentLevel,
+                seconds: seconds,
+                userInput: userInput
+            };
+            localStorage.setItem('sudokuSavedGame', JSON.stringify(savedGame));
+        }
+
+        function clearSavedGame() {
+            savedGame = null;
+            localStorage.removeItem('sudokuSavedGame');
+        }
+
+        function generateSolvedSudoku() {
+            let board = Array(9).fill(null).map(() => Array(9).fill(0));
+            solveSudoku(board);
+            return board;
+        }
+
+        function solveSudoku(board) {
+            let empty = findEmpty(board);
+            if (!empty) return true;
+            let [row, col] = empty;
+            let nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            for (let num of nums) {
+                if (isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    if (solveSudoku(board)) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        function findEmpty(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) return [row, col];
+                }
+            }
+            return null;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let c = 0; c < 9; c++) {
+                if (board[row][c] === num) return false;
+            }
+            for (let r = 0; r < 9; r++) {
+                if (board[r][col] === num) return false;
+            }
+            let startRow = Math.floor(row / 3) * 3;
+            let startCol = Math.floor(col / 3) * 3;
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if (board[r][c] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function shuffleArray(arr) {
+            let result = [...arr];
+            for (let i = result.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+
+        function createPuzzle(solution, level) {
+            let puzzle = solution.map(row => [...row]);
+            let removeCount;
+            switch(level) {
+                case 'easy': removeCount = 35 + Math.floor(Math.random() * 6); break;
+                case 'medium': removeCount = 45 + Math.floor(Math.random() * 6); break;
+                case 'hard': removeCount = 55 + Math.floor(Math.random() * 6); break;
+                default: removeCount = 35;
+            }
+            let positions = shuffleArray([...Array(81).keys()]);
+            for (let i = 0; i < removeCount; i++) {
+                let pos = positions[i];
+                let row = Math.floor(pos / 9);
+                let col = pos % 9;
+                puzzle[row][col] = 0;
+            }
+            return puzzle;
+        }
+
+        function renderBoard(userInput = {}) {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    let value = puzzle[row][col];
+                    if (value !== 0) {
+                        cell.classList.add('initial');
+                        cell.textContent = value;
+                    } else {
+                        cell.classList.add('input-cell');
+                        let input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.inputMode = 'numeric';
+                        const key = `${row}-${col}`;
+                        if (userInput[key]) input.value = userInput[key];
+                        input.addEventListener('input', function(e) {
+                            this.value = this.value.replace(/[^1-9]/g, '');
+                            if (this.value.length > 1) this.value = this.value.charAt(0);
+                            cell.classList.remove('error');
+                            saveCurrentInput();
+                        });
+                        input.addEventListener('keydown', function(e) {
+                            handleKeyDown(e, row, col);
+                        });
+                        cell.appendChild(input);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function saveCurrentInput() {
+            let userInput = {};
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let key = `${cell.dataset.row}-${cell.dataset.col}`;
+                if (input.value) userInput[key] = input.value;
+            });
+            if (savedGame) {
+                savedGame.userInput = userInput;
+                savedGame.seconds = seconds;
+                localStorage.setItem('sudokuSavedGame', JSON.stringify(savedGame));
+            }
+        }
+
+        function handleKeyDown(e, row, col) {
+            let newRow = row, newCol = col;
+            switch(e.key) {
+                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                case 'ArrowDown': newRow = Math.min(8, row + 1); break;
+                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                case 'ArrowRight': newCol = Math.min(8, col + 1); break;
+                default: return;
+            }
+            if (newRow !== row || newCol !== col) {
+                e.preventDefault();
+                let nextCell = document.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"] input`);
+                if (nextCell) nextCell.focus();
+            }
+        }
+
+        function checkAnswer() {
+            let hasError = false;
+            let allFilled = true;
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col);
+                let value = parseInt(input.value) || 0;
+                if (value === 0) allFilled = false;
+                if (value !== 0 && value !== solution[row][col]) {
+                    cell.classList.add('error');
+                    hasError = true;
+                } else {
+                    cell.classList.remove('error');
+                }
+            });
+            if (!hasError && allFilled) {
+                gameWin();
+            } else if (hasError) {
+                showMessage('ERROR DETECTED', 'error');
+            } else if (!allFilled) {
+                showMessage('INCOMPLETE', 'error');
+            }
+        }
+
+        function clearInput() {
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                input.value = '';
+                cell.classList.remove('error');
+            });
+            saveCurrentInput();
+            hideMessage();
+        }
+
+        function gameWin() {
+            stopTimer();
+            clearSavedGame();
+            saveRecord(currentLevel, seconds);
+            document.getElementById('finalTime').textContent = formatTime(seconds);
+            const levels = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+            document.getElementById('finalLevel').textContent = levels[currentLevel];
+            const score = calculateAIScore(currentLevel, seconds);
+            document.getElementById('aiStars').textContent = '★'.repeat(score.stars) + '☆'.repeat(5 - score.stars);
+            document.getElementById('aiComment').textContent = score.comment;
+            showPage('victoryPage');
+        }
+
+        function calculateAIScore(level, time) {
+            const baseTimes = { easy: 180, medium: 300, hard: 600 };
+            const baseTime = baseTimes[level];
+            const ratio = baseTime / time;
+            if (ratio >= 2) return { stars: 5, comment: 'LEGENDARY' };
+            if (ratio >= 1.5) return { stars: 4, comment: 'EXCELLENT' };
+            if (ratio >= 1) return { stars: 3, comment: 'WELL DONE' };
+            if (ratio >= 0.7) return { stars: 2, comment: 'GOOD' };
+            return { stars: 1, comment: 'COMPLETE' };
+        }
+
+        function showMessage(text, type) {
+            let msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            let msg = document.getElementById('message');
+            msg.className = 'message';
+            msg.textContent = '';
+        }
+
+        function init() {
+            updateContinueButton();
+            loadRecords();
+        }
+
+        init();
+    </script>
+</body>
+</html>

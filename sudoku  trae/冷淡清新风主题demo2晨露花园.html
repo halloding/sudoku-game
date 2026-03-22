@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷淡清新风 - 方案二：晨露花园</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 30%, #d1fae5 100%);
+        }
+
+        .garden-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #86efac, #4ade80);
+            border-radius: 0 50% 0 50%;
+            opacity: 0.6;
+            animation: leaf-float 12s ease-in-out infinite;
+        }
+
+        @keyframes leaf-float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg) scale(1); 
+                opacity: 0.4; 
+            }
+            25% { 
+                transform: translateY(-30px) rotate(15deg) scale(1.1); 
+                opacity: 0.7; 
+            }
+            50% { 
+                transform: translateY(-15px) rotate(-10deg) scale(0.95); 
+                opacity: 0.5; 
+            }
+            75% { 
+                transform: translateY(-25px) rotate(5deg) scale(1.05); 
+                opacity: 0.6; 
+            }
+        }
+
+        .leaf:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; width: 25px; height: 25px; }
+        .leaf:nth-child(2) { top: 25%; left: 85%; animation-delay: 2s; background: linear-gradient(135deg, #6ee7b7, #34d399); }
+        .leaf:nth-child(3) { top: 45%; left: 12%; animation-delay: 4s; width: 35px; height: 35px; }
+        .leaf:nth-child(4) { top: 65%; left: 88%; animation-delay: 1s; background: linear-gradient(135deg, #a7f3d0, #6ee7b7); }
+        .leaf:nth-child(5) { top: 80%; left: 10%; animation-delay: 3s; width: 28px; height: 28px; }
+        .leaf:nth-child(6) { top: 15%; left: 90%; animation-delay: 5s; background: linear-gradient(135deg, #86efac, #4ade80); }
+        .leaf:nth-child(7) { top: 55%; left: 5%; animation-delay: 2.5s; width: 32px; height: 32px; }
+        .leaf:nth-child(8) { top: 35%; left: 92%; animation-delay: 4.5s; background: linear-gradient(135deg, #6ee7b7, #34d399); }
+
+        .flower {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            animation: flower-sway 8s ease-in-out infinite;
+        }
+
+        .flower::before,
+        .flower::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #fda4af, #fb7185);
+            border-radius: 50%;
+        }
+
+        .flower::before {
+            transform: rotate(45deg);
+        }
+
+        .flower::after {
+            transform: rotate(90deg);
+        }
+
+        .flower-center {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fde68a;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        @keyframes flower-sway {
+            0%, 100% { transform: rotate(-5deg) scale(1); }
+            50% { transform: rotate(5deg) scale(1.05); }
+        }
+
+        .flower:nth-child(1) { top: 12%; left: 15%; animation-delay: 0s; }
+        .flower:nth-child(2) { top: 28%; left: 82%; animation-delay: 1.5s; }
+        .flower:nth-child(2)::before,
+        .flower:nth-child(2)::after {
+            background: radial-gradient(circle, #c4b5fd, #a78bfa);
+        }
+        .flower:nth-child(3) { top: 50%; left: 8%; animation-delay: 3s; }
+        .flower:nth-child(3)::before,
+        .flower:nth-child(3)::after {
+            background: radial-gradient(circle, #93c5fd, #60a5fa);
+        }
+        .flower:nth-child(4) { top: 72%; left: 85%; animation-delay: 4.5s; }
+        .flower:nth-child(5) { top: 88%; left: 18%; animation-delay: 1s; }
+        .flower:nth-child(5)::before,
+        .flower:nth-child(5)::after {
+            background: radial-gradient(circle, #fcd34d, #f59e0b);
+        }
+
+        .dewdrop {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #dbeafe);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow: 
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+                0 2px 8px rgba(148, 163, 184, 0.2);
+            animation: dewdrop-shine 4s ease-in-out infinite;
+        }
+
+        @keyframes dewdrop-shine {
+            0%, 100% { 
+                box-shadow: 
+                    inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+                    0 2px 8px rgba(148, 163, 184, 0.2);
+                opacity: 0.9;
+            }
+            50% { 
+                box-shadow: 
+                    inset 2px 2px 8px rgba(255, 255, 255, 1),
+                    0 4px 15px rgba(148, 163, 184, 0.3);
+                opacity: 1;
+            }
+        }
+
+        .dewdrop:nth-child(1) { top: 18%; left: 20%; animation-delay: 0s; width: 10px; height: 10px; }
+        .dewdrop:nth-child(2) { top: 32%; left: 78%; animation-delay: 1s; }
+        .dewdrop:nth-child(3) { top: 58%; left: 15%; animation-delay: 2s; width: 14px; height: 14px; }
+        .dewdrop:nth-child(4) { top: 75%; left: 80%; animation-delay: 0.5s; }
+        .dewdrop:nth-child(5) { top: 45%; left: 90%; animation-delay: 1.5s; width: 11px; height: 11px; }
+        .dewdrop:nth-child(6) { top: 65%; left: 5%; animation-delay: 2.5s; }
+
+        .sunlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse at 20% 10%, rgba(254, 249, 195, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(216, 234, 255, 0.3) 0%, transparent 50%);
+            animation: sunlight-move 15s ease-in-out infinite;
+        }
+
+        @keyframes sunlight-move {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .grass-blade {
+            position: absolute;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #22c55e, #16a34a);
+            border-radius: 2px 2px 0 0;
+            transform-origin: bottom center;
+            animation: grass-sway 6s ease-in-out infinite;
+        }
+
+        @keyframes grass-sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        .grass-blade:nth-child(1) { left: 5%; height: 60px; animation-delay: 0s; }
+        .grass-blade:nth-child(2) { left: 10%; height: 45px; animation-delay: 0.5s; }
+        .grass-blade:nth-child(3) { left: 15%; height: 70px; animation-delay: 1s; }
+        .grass-blade:nth-child(4) { left: 85%; height: 55px; animation-delay: 1.5s; }
+        .grass-blade:nth-child(5) { left: 90%; height: 65px; animation-delay: 2s; }
+        .grass-blade:nth-child(6) { left: 95%; height: 50px; animation-delay: 2.5s; }
+
+        .game-container {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 480px;
+            width: 92%;
+            box-shadow: 
+                0 8px 32px rgba(34, 197, 94, 0.1),
+                0 1px 3px rgba(34, 197, 94, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                0 0 60px rgba(134, 239, 172, 0.15);
+            border: 1px solid rgba(134, 239, 172, 0.4);
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(134, 239, 172, 0.1) 0%, transparent 50%, rgba(251, 113, 133, 0.08) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 300;
+            color: #334155;
+            margin-bottom: 30px;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #22c55e, #4ade80, #86efac, #22c55e);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: title-garden 5s ease-in-out infinite;
+        }
+
+        @keyframes title-garden {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .demo-box {
+            padding: 30px;
+            background: linear-gradient(145deg, rgba(248, 250, 252, 0.96), rgba(240, 253, 244, 0.92));
+            border-radius: 16px;
+            border: 1px solid rgba(134, 239, 172, 0.35);
+            text-align: center;
+            color: #475569;
+            font-size: 15px;
+        }
+
+        .scheme-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 400;
+            color: #475569;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(134, 239, 172, 0.15), rgba(251, 207, 232, 0.1));
+            border-radius: 12px;
+            border: 1px solid rgba(134, 239, 172, 0.35);
+            letter-spacing: 3px;
+        }
+        
+        .demo-box p {
+            margin: 16px 0;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sunlight"></div>
+    
+    <div class="garden-bg">
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        
+        <div class="flower">
+            <div class="flower-center"></div>
+        </div>
+        <div class="flower">
+            <div class="flower-center"></div>
+        </div>
+        <div class="flower">
+            <div class="flower-center"></div>
+        </div>
+        <div class="flower">
+            <div class="flower-center"></div>
+        </div>
+        <div class="flower">
+            <div class="flower-center"></div>
+        </div>
+        
+        <div class="dewdrop"></div>
+        <div class="dewdrop"></div>
+        <div class="dewdrop"></div>
+        <div class="dewdrop"></div>
+        <div class="dewdrop"></div>
+        <div class="dewdrop"></div>
+        
+        <div class="grass-blade"></div>
+        <div class="grass-blade"></div>
+        <div class="grass-blade"></div>
+        <div class="grass-blade"></div>
+        <div class="grass-blade"></div>
+        <div class="grass-blade"></div>
+    </div>
+
+    <div class="game-container">
+        <h1 class="title">数独</h1>
+        <div class="scheme-name">🌸 方案二：晨露花园 🌸</div>
+        <div class="demo-box">
+            <p>🍃 绿叶轻轻飘浮</p>
+            <p>🌸 小花左右摇摆</p>
+            <p>💧 露珠晶莹闪烁</p>
+            <p>☀️ 柔和阳光洒落</p>
+            <p>🌿 青草微微摇曳</p>
+        </div>
+    </div>
+</body>
+</html>

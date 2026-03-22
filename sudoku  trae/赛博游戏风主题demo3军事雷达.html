@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 v4.3 硬核黑客风</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Share Tech Mono', 'Courier New', monospace;
+            background: #050a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ===== 蜂窝网格背景 ===== */
+        .hex-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2300ff00' fill-opacity='0.08'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34zM0 12l1.5-1.5h2L3 12v-1.5h1.5V12H0zm11-6.2L1 9.75v6.5l12 6.5V6.8l-11-6.2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: hex-scroll 30s linear infinite;
+        }
+
+        @keyframes hex-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+
+        .hex-grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2300ff00' fill-opacity='0.05'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34zM0 12l1.5-1.5h2L3 12v-1.5h1.5V12H0zm11-6.2L1 9.75v6.5l12 6.5V6.8l-11-6.2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-size: 56px 98px;
+            opacity: 0.5;
+        }
+
+        /* ===== 雷达扫描效果 ===== */
+        .radar-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 80vmax;
+            height: 80vmax;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 255, 0, 0.15) 30deg, transparent 60deg);
+            animation: radar-rotate 4s linear infinite;
+        }
+
+        @keyframes radar-rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .radar-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(0, 255, 0, 0.1);
+            border-radius: 50%;
+        }
+
+        .radar-ring:nth-child(1) { width: 20%; height: 20%; }
+        .radar-ring:nth-child(2) { width: 40%; height: 40%; }
+        .radar-ring:nth-child(3) { width: 60%; height: 60%; }
+        .radar-ring:nth-child(4) { width: 80%; height: 80%; }
+
+        .radar-ring::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1px;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .radar-ring::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 1px;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        /* ===== 敌机追踪效果 ===== */
+        .tracking-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #ff0000;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            box-shadow: 0 0 8px #ff0000, 0 0 15px #ff0000;
+            animation: tracking-blink 0.5s infinite;
+        }
+
+        @keyframes tracking-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .tracking-line {
+            position: fixed;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.5;
+        }
+
+        /* ===== 扫描线 ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 0, 0.03) 2px,
+                    rgba(0, 255, 0, 0.03) 4px
+                );
+            pointer-events: none;
+            z-index: 1000;
+            animation: terminal-scan 10s linear infinite;
+        }
+
+        @keyframes terminal-scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* ===== 终端风格背景 ===== */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(0, 20, 0, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ===== 数据流效果 ===== */
+        .data-stream {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+            overflow: hidden;
+            font-size: 10px;
+            color: rgba(0, 255, 0, 0.3);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.2;
+        }
+
+        .data-stream-column {
+            position: absolute;
+            top: -100%;
+            animation: data-fall 15s linear infinite;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        @keyframes data-fall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(200%); }
+        }
+
+        /* ===== 角落装饰 ===== */
+        .corner-tech {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .corner-tech::before,
+        .corner-tech::after {
+            content: '';
+            position: absolute;
+            background: #00ff00;
+        }
+
+        .corner-tech.top-left {
+            top: 15px;
+            left: 15px;
+        }
+        .corner-tech.top-left::before {
+            width: 40px;
+            height: 1px;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        .corner-tech.top-left::after {
+            width: 1px;
+            height: 40px;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .corner-tech.top-right {
+            top: 15px;
+            right: 15px;
+        }
+        .corner-tech.top-right::before {
+            width: 40px;
+            height: 1px;
+            top: 0;
+            right: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        .corner-tech.top-right::after {
+            width: 1px;
+            height: 40px;
+            top: 0;
+            right: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .corner-tech.bottom-left {
+            bottom: 15px;
+            left: 15px;
+        }
+        .corner-tech.bottom-left::before {
+            width: 40px;
+            height: 1px;
+            bottom: 0;
+            left: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        .corner-tech.bottom-left::after {
+            width: 1px;
+            height: 40px;
+            bottom: 0;
+            left: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .corner-tech.bottom-right {
+            bottom: 15px;
+            right: 15px;
+        }
+        .corner-tech.bottom-right::before {
+            width: 40px;
+            height: 1px;
+            bottom: 0;
+            right: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        .corner-tech.bottom-right::after {
+            width: 1px;
+            height: 40px;
+            bottom: 0;
+            right: 0;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        /* ===== 状态指示器 ===== */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: rgba(0, 20, 0, 0.5);
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+            pointer-events: none;
+            z-index: 5;
+            font-size: 10px;
+            color: #00ff00;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: status-pulse 1s infinite;
+        }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ===== 底部装饰 ===== */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25px;
+            background: rgba(0, 20, 0, 0.5);
+            border-top: 1px solid rgba(0, 255, 0, 0.3);
+            pointer-events: none;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            font-size: 9px;
+            color: rgba(0, 255, 0, 0.5);
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .game-container {
+            background: #0a0a0a;
+            border-radius: 2px;
+            padding: 28px;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            border: 1px solid #00ff00;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.3),
+                0 0 40px rgba(0, 255, 0, 0.1),
+                inset 0 0 30px rgba(0, 20, 0, 0.5);
+        }
+
+        .game-container::before {
+            content: '> SYSTEM ACCESSED_';
+            position: absolute;
+            top: -24px;
+            left: 0;
+            font-size: 11px;
+            color: #00ff00;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff00;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        .game-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0, 255, 0, 0.02) 0%, transparent 50%, rgba(0, 255, 0, 0.02) 100%);
+            pointer-events: none;
+        }
+
+        .terminal-header {
+            background: #001100;
+            padding: 8px 12px;
+            margin: -28px -28px 20px -28px;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff00;
+            box-shadow: 0 0 8px #00ff00;
+        }
+
+        .terminal-dot:nth-child(2) {
+            background: #ffff00;
+            box-shadow: 0 0 8px #ffff00;
+        }
+
+        .terminal-dot:nth-child(3) {
+            background: #ff0000;
+            box-shadow: 0 0 8px #ff0000;
+        }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            color: #00ff00;
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #00ff00;
+            margin-bottom: 24px;
+            letter-spacing: 12px;
+            text-shadow: 
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 40px #00aa00;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .title span {
+            color: #00ff00;
+            opacity: 0.7;
+        }
+
+        .system-info {
+            font-size: 10px;
+            color: #00aa00;
+            text-align: center;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            border-bottom: 1px dashed #003300;
+            padding-bottom: 10px;
+        }
+
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .home-btn {
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: #00ff00;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: #000;
+            border: 1px solid #00aa00;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-btn::before {
+            content: '>';
+            position: absolute;
+            left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .home-btn:hover::before {
+            opacity: 1;
+        }
+
+        .home-btn:hover {
+            background: #001100;
+            border-color: #00ff00;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 0, 0.4),
+                inset 0 0 15px rgba(0, 255, 0, 0.1);
+            padding-left: 30px;
+        }
+
+        .home-btn:active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .home-btn.new-game {
+            border-color: rgba(0, 255, 0, 0.6);
+        }
+
+        .home-btn.continue {
+            border-color: rgba(255, 255, 0, 0.6);
+            color: #ffff00;
+        }
+
+        .home-btn.continue:hover {
+            border-color: #ffff00;
+            box-shadow: 
+                0 0 15px rgba(255, 255, 0, 0.4),
+                inset 0 0 15px rgba(255, 255, 0, 0.1);
+        }
+
+        .home-btn.continue::before {
+            color: #ffff00;
+        }
+
+        .home-btn.continue:active {
+            background: #ffff00;
+            color: #000;
+        }
+
+        .home-btn.records {
+            border-color: rgba(0, 255, 255, 0.6);
+            color: #00ffff;
+        }
+
+        .home-btn.records:hover {
+            border-color: #00ffff;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.4),
+                inset 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+
+        .home-btn.records::before {
+            color: #00ffff;
+        }
+
+        .home-btn.records:active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .home-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .home-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            padding-left: 24px;
+        }
+
+        .difficulty-screen {
+            text-align: center;
+        }
+
+        .difficulty-screen h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff00;
+            margin-bottom: 24px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 10px #00ff00;
+            text-transform: uppercase;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .diff-btn {
+            padding: 12px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: #000;
+            border: 1px solid #00aa00;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .diff-btn:hover {
+            background: #001100;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .diff-btn:active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .diff-btn.easy {
+            border-color: rgba(0, 255, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .diff-btn.medium {
+            border-color: rgba(255, 255, 0, 0.5);
+            color: #ffff00;
+        }
+
+        .diff-btn.medium:hover {
+            border-color: #ffff00;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+        }
+
+        .diff-btn.medium:active {
+            background: #ffff00;
+            color: #000;
+        }
+
+        .diff-btn.hard {
+            border-color: rgba(255, 0, 0, 0.5);
+            color: #ff0000;
+        }
+
+        .diff-btn.hard:hover {
+            border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .diff-btn.hard:active {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            padding: 10px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            background: transparent;
+            color: #00aa00;
+            border: 1px solid #003300;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .back-btn:hover {
+            border-color: #00ff00;
+            color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #00ff00;
+            margin-bottom: 14px;
+            padding: 12px;
+            background: #000;
+            border-radius: 2px;
+            letter-spacing: 6px;
+            border: 1px solid #003300;
+            text-shadow: 0 0 15px #00ff00;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #003300;
+        }
+
+        .level-badge {
+            padding: 6px 14px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #000;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .level-badge.easy {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .level-badge.medium {
+            background: #ffff00;
+            box-shadow: 0 0 10px #ffff00;
+        }
+
+        .level-badge.hard {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+            color: #fff;
+        }
+
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #000;
+            border: 2px solid #00aa00;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.2),
+                inset 0 0 40px rgba(0, 20, 0, 0.5);
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 700;
+            background: #050505;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: #00ff00;
+            font-family: 'JetBrains Mono', monospace;
+            border-right: 1px solid #002200;
+        }
+
+        .cell:nth-child(3n) {
+            border-right: 2px solid #00aa00;
+        }
+
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #00aa00;
+        }
+
+        .cell:hover {
+            background: #001100;
+            box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .cell.initial {
+            background: #000;
+            color: #00aa00;
+            cursor: default;
+        }
+
+        .cell.input-cell {
+            background: #050505;
+            color: #00ff00;
+        }
+
+        .cell.error {
+            background: #110000;
+            color: #ff0000;
+            animation: error-blink 0.3s ease;
+        }
+
+        @keyframes error-blink {
+            0%, 100% { box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3); }
+            50% { box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.5); }
+        }
+
+        .cell:focus-within {
+            outline: 2px solid #00ff00;
+            outline-offset: -2px;
+            z-index: 1;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 0, 0.3),
+                inset 0 0 15px rgba(0, 255, 0, 0.1);
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff00;
+            background: transparent;
+            outline: none;
+            padding: 0;
+            caret-color: #00ff00;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cell.initial input {
+            color: #00aa00;
+        }
+
+        .cell.error input {
+            color: #ff0000;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: #000;
+            border: 1px solid #00aa00;
+            color: #00ff00;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn:hover {
+            background: #001100;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn:active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .btn-new {
+            border-color: rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-check {
+            border-color: rgba(255, 255, 0, 0.5);
+            color: #ffff00;
+        }
+
+        .btn-check:hover {
+            border-color: #ffff00;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+        }
+
+        .btn-check:active {
+            background: #ffff00;
+            color: #000;
+        }
+
+        .btn-clear {
+            border-color: rgba(0, 255, 255, 0.5);
+            color: #00ffff;
+        }
+
+        .btn-clear:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-clear:active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .btn-quit {
+            border-color: rgba(100, 100, 100, 0.5);
+            color: #666;
+        }
+
+        .btn-quit:hover {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            display: none;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .message.success {
+            display: block;
+            background: #001100;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .message.error {
+            display: block;
+            background: #110000;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .victory-screen {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .victory-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: 12px;
+            color: #00ff00;
+            text-shadow: 
+                0 0 10px #00ff00,
+                0 0 20px #00ff00,
+                0 0 40px #00aa00;
+            animation: victory-pulse 1s ease-in-out infinite;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        @keyframes victory-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .victory-stats {
+            background: #000;
+            border-radius: 2px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid #00aa00;
+        }
+
+        .stat-item {
+            margin: 12px 0;
+            font-size: 12px;
+            color: #00aa00;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00ff00;
+            display: block;
+            margin-top: 6px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .ai-score {
+            font-size: 12px;
+            color: #00aa00;
+            margin-top: 16px;
+            padding: 14px;
+            background: #000;
+            border-radius: 2px;
+            letter-spacing: 2px;
+            border: 1px solid #003300;
+            text-transform: uppercase;
+        }
+
+        .score-stars {
+            font-size: 24px;
+            margin-top: 8px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .victory-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .victory-btn {
+            padding: 12px 24px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #00ff00;
+            background: #000;
+            border: 1px solid #00aa00;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .victory-btn:hover {
+            background: #001100;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .victory-btn.home {
+            border-color: rgba(0, 255, 255, 0.5);
+            color: #00ffff;
+        }
+
+        .victory-btn.home:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .records-screen {
+            text-align: center;
+        }
+
+        .records-screen h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff00;
+            margin-bottom: 20px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 10px #00ff00;
+            text-transform: uppercase;
+        }
+
+        .record-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .record-card {
+            background: #000;
+            border-radius: 2px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #002200;
+        }
+
+        .record-level {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            padding: 6px 14px;
+            border-radius: 2px;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        .record-level.easy {
+            background: #00ff00;
+        }
+
+        .record-level.medium {
+            background: #ffff00;
+        }
+
+        .record-level.hard {
+            background: #ff0000;
+            color: #fff;
+        }
+
+        .record-time {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff00;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 20px 14px;
+            }
+            .title {
+                font-size: 24px;
+                letter-spacing: 8px;
+            }
+            .cell, .cell input {
+                font-size: 16px;
+            }
+            .button-section {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+            .victory-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 蜂窝网格背景 -->
+    <div class="hex-grid"></div>
+    
+    <!-- 雷达扫描效果 -->
+    <div class="radar-container">
+        <div class="radar-sweep"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+    </div>
+    
+    <!-- 敌机追踪点 -->
+    <div class="tracking-dot" style="top: 30%; left: 20%;"></div>
+    <div class="tracking-dot" style="top: 60%; right: 25%;"></div>
+    <div class="tracking-dot" style="top: 45%; left: 70%;"></div>
+    <div class="tracking-line" style="top: 30%; left: 20%; width: 150px; transform: rotate(-30deg);"></div>
+    <div class="tracking-line" style="top: 60%; right: 25%; width: 120px; transform: rotate(45deg);"></div>
+    
+    <!-- 数据流效果 -->
+    <div class="data-stream" id="dataStream"></div>
+    
+    <!-- 角落装饰 -->
+    <div class="corner-tech top-left"></div>
+    <div class="corner-tech top-right"></div>
+    <div class="corner-tech bottom-left"></div>
+    <div class="corner-tech bottom-right"></div>
+    
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-dot"></span>
+            <span>SYSTEM ONLINE</span>
+        </div>
+        <div class="status-item">
+            <span>RADAR: ACTIVE</span>
+        </div>
+        <div class="status-item">
+            <span>SECURE: OK</span>
+        </div>
+    </div>
+    
+    <!-- 底部栏 -->
+    <div class="bottom-bar">
+        <span>SCAN: COMPLETE</span>
+        <span>v4.3 HACKER EDITION</span>
+        <span>ENCRYPTION: ACTIVE</span>
+    </div>
+
+    <div class="game-container">
+        <div class="terminal-header">
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <div class="terminal-title">SUDOKU_SYSTEM_V4.3</div>
+        </div>
+        
+        <div class="page active" id="homePage">
+            <div class="system-info">> CONNECTED TO MAINFRAME_</div>
+            <h1 class="title">数<span>独</span></h1>
+            <div class="home-buttons">
+                <button class="home-btn new-game" onclick="showDifficultyScreen()">[1] NEW GAME</button>
+                <button class="home-btn continue" id="continueBtn" onclick="continueGame()">[2] CONTINUE</button>
+                <button class="home-btn records" onclick="showRecords()">[3] RECORDS</button>
+            </div>
+        </div>
+
+        <div class="page" id="difficultyPage">
+            <div class="difficulty-screen">
+                <h2>> SELECT LEVEL_</h2>
+                <div class="difficulty-buttons">
+                    <button class="diff-btn easy" onclick="startNewGame('easy')">[E] EASY</button>
+                    <button class="diff-btn medium" onclick="startNewGame('medium')">[M] MEDIUM</button>
+                    <button class="diff-btn hard" onclick="startNewGame('hard')">[H] HARD</button>
+                </div>
+                <button class="back-btn" onclick="showHomePage()">< BACK</button>
+            </div>
+        </div>
+
+        <div class="page" id="gamePage">
+            <div class="game-header">
+                <div class="level-badge" id="levelBadge">EASY</div>
+                <button class="btn btn-quit" onclick="quitGame()">QUIT</button>
+            </div>
+            <div class="timer-display" id="timer">00:00:00</div>
+            <div class="sudoku-board" id="board"></div>
+            <div class="button-section">
+                <button class="btn btn-new" onclick="restartGame()">NEW</button>
+                <button class="btn btn-check" onclick="checkAnswer()">CHECK</button>
+                <button class="btn btn-clear" onclick="clearInput()">CLEAR</button>
+            </div>
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="page" id="victoryPage">
+            <div class="victory-screen">
+                <div class="victory-title">ACCESS GRANTED</div>
+                <div class="victory-stats">
+                    <div class="stat-item">
+                        <span>> TIME ELAPSED</span>
+                        <span class="stat-value" id="finalTime">00:00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>> DIFFICULTY</span>
+                        <span class="stat-value" id="finalLevel">EASY</span>
+                    </div>
+                </div>
+                <div class="ai-score">
+                    <div>> SECURITY CLEARANCE</div>
+                    <div class="score-stars" id="aiStars">★★★★★</div>
+                    <div id="aiComment" style="margin-top:8px;color:#00ff00">ACCESS LEVEL: ALPHA</div>
+                </div>
+                <div class="victory-buttons">
+                    <button class="victory-btn" onclick="showHomePage()">RETURN TO ROOT</button>
+                    <button class="victory-btn" onclick="startNewGame(currentLevel)">EXECUTE AGAIN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="recordsPage">
+            <div class="records-screen">
+                <h2>> ACCESS LOG_</h2>
+                <div class="record-cards">
+                    <div class="record-card">
+                        <span class="record-level easy">EASY</span>
+                        <span class="record-time" id="recordEasy">--:--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level medium">MEDIUM</span>
+                        <span class="record-time" id="recordMedium">--:--:--</span>
+                    </div>
+                    <div class="record-card">
+                        <span class="record-level hard">HARD</span>
+                        <span class="record-time" id="recordHard">--:--:--</span>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="showHomePage()" style="margin-top:20px">< BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let solution = [];
+        let puzzle = [];
+        let currentLevel = 'easy';
+        let gameStarted = false;
+        let savedGame = null;
+        let timerInterval = null;
+        let seconds = 0;
+        let records = { easy: null, medium: null, hard: null };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showHomePage() {
+            stopTimer();
+            updateContinueButton();
+            showPage('homePage');
+        }
+
+        function showDifficultyScreen() {
+            showPage('difficultyPage');
+        }
+
+        function showRecords() {
+            loadRecords();
+            showPage('recordsPage');
+        }
+
+        function loadRecords() {
+            const saved = localStorage.getItem('sudokuRecords_v43');
+            if (saved) records = JSON.parse(saved);
+            document.getElementById('recordEasy').textContent = records.easy ? formatTime(records.easy) : '--:--:--';
+            document.getElementById('recordMedium').textContent = records.medium ? formatTime(records.medium) : '--:--:--';
+            document.getElementById('recordHard').textContent = records.hard ? formatTime(records.hard) : '--:--:--';
+        }
+
+        function saveRecord(level, time) {
+            if (!records[level] || time < records[level]) {
+                records[level] = time;
+                localStorage.setItem('sudokuRecords_v43', JSON.stringify(records));
+            }
+        }
+
+        function updateContinueButton() {
+            const btn = document.getElementById('continueBtn');
+            const saved = localStorage.getItem('sudokuSavedGame_v43');
+            if (saved) {
+                savedGame = JSON.parse(saved);
+                btn.classList.remove('disabled');
+            } else {
+                btn.classList.add('disabled');
+            }
+        }
+
+        function continueGame() {
+            if (!savedGame) return;
+            solution = savedGame.solution;
+            puzzle = savedGame.puzzle;
+            currentLevel = savedGame.level;
+            seconds = savedGame.seconds;
+            renderBoard(savedGame.userInput);
+            startTimer();
+            updateLevelBadge();
+            showPage('gamePage');
+        }
+
+        function startNewGame(level) {
+            currentLevel = level;
+            solution = generateSolvedSudoku();
+            puzzle = createPuzzle(solution, level);
+            renderBoard({});
+            startTimer();
+            updateLevelBadge();
+            saveGame({});
+            showPage('gamePage');
+        }
+
+        function restartGame() {
+            startNewGame(currentLevel);
+        }
+
+        function quitGame() {
+            showHomePage();
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                seconds++;
+                document.getElementById('timer').textContent = formatTime(seconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function formatTime(secs) {
+            const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+            const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+            const s = (secs % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function updateLevelBadge() {
+            const badge = document.getElementById('levelBadge');
+            const levels = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+            badge.textContent = levels[currentLevel];
+            badge.className = 'level-badge ' + currentLevel;
+        }
+
+        function saveGame(userInput) {
+            savedGame = {
+                solution: solution,
+                puzzle: puzzle,
+                level: currentLevel,
+                seconds: seconds,
+                userInput: userInput
+            };
+            localStorage.setItem('sudokuSavedGame_v43', JSON.stringify(savedGame));
+        }
+
+        function clearSavedGame() {
+            savedGame = null;
+            localStorage.removeItem('sudokuSavedGame_v43');
+        }
+
+        function generateSolvedSudoku() {
+            let board = Array(9).fill(null).map(() => Array(9).fill(0));
+            solveSudoku(board);
+            return board;
+        }
+
+        function solveSudoku(board) {
+            let empty = findEmpty(board);
+            if (!empty) return true;
+            let [row, col] = empty;
+            let nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            for (let num of nums) {
+                if (isValid(board, row, col, num)) {
+                    board[row][col] = num;
+                    if (solveSudoku(board)) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        }
+
+        function findEmpty(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) return [row, col];
+                }
+            }
+            return null;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let c = 0; c < 9; c++) {
+                if (board[row][c] === num) return false;
+            }
+            for (let r = 0; r < 9; r++) {
+                if (board[r][col] === num) return false;
+            }
+            let startRow = Math.floor(row / 3) * 3;
+            let startCol = Math.floor(col / 3) * 3;
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if (board[r][c] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function shuffleArray(arr) {
+            let result = [...arr];
+            for (let i = result.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+
+        function createPuzzle(solution, level) {
+            let puzzle = solution.map(row => [...row]);
+            let removeCount;
+            switch(level) {
+                case 'easy': removeCount = 35 + Math.floor(Math.random() * 6); break;
+                case 'medium': removeCount = 45 + Math.floor(Math.random() * 6); break;
+                case 'hard': removeCount = 55 + Math.floor(Math.random() * 6); break;
+                default: removeCount = 35;
+            }
+            let positions = shuffleArray([...Array(81).keys()]);
+            for (let i = 0; i < removeCount; i++) {
+                let pos = positions[i];
+                let row = Math.floor(pos / 9);
+                let col = pos % 9;
+                puzzle[row][col] = 0;
+            }
+            return puzzle;
+        }
+
+        function renderBoard(userInput = {}) {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    let value = puzzle[row][col];
+                    if (value !== 0) {
+                        cell.classList.add('initial');
+                        cell.textContent = value;
+                    } else {
+                        cell.classList.add('input-cell');
+                        let input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.inputMode = 'numeric';
+                        const key = `${row}-${col}`;
+                        if (userInput[key]) input.value = userInput[key];
+                        input.addEventListener('input', function(e) {
+                            this.value = this.value.replace(/[^1-9]/g, '');
+                            if (this.value.length > 1) this.value = this.value.charAt(0);
+                            cell.classList.remove('error');
+                            saveCurrentInput();
+                        });
+                        input.addEventListener('keydown', function(e) {
+                            handleKeyDown(e, row, col);
+                        });
+                        cell.appendChild(input);
+                    }
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function saveCurrentInput() {
+            let userInput = {};
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let key = `${cell.dataset.row}-${cell.dataset.col}`;
+                if (input.value) userInput[key] = input.value;
+            });
+            if (savedGame) {
+                savedGame.userInput = userInput;
+                savedGame.seconds = seconds;
+                localStorage.setItem('sudokuSavedGame_v43', JSON.stringify(savedGame));
+            }
+        }
+
+        function handleKeyDown(e, row, col) {
+            let newRow = row, newCol = col;
+            switch(e.key) {
+                case 'ArrowUp': newRow = Math.max(0, row - 1); break;
+                case 'ArrowDown': newRow = Math.min(8, row + 1); break;
+                case 'ArrowLeft': newCol = Math.max(0, col - 1); break;
+                case 'ArrowRight': newCol = Math.min(8, col + 1); break;
+                default: return;
+            }
+            if (newRow !== row || newCol !== col) {
+                e.preventDefault();
+                let nextCell = document.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"] input`);
+                if (nextCell) nextCell.focus();
+            }
+        }
+
+        function checkAnswer() {
+            let hasError = false;
+            let allFilled = true;
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                let row = parseInt(cell.dataset.row);
+                let col = parseInt(cell.dataset.col);
+                let value = parseInt(input.value) || 0;
+                if (value === 0) allFilled = false;
+                if (value !== 0 && value !== solution[row][col]) {
+                    cell.classList.add('error');
+                    hasError = true;
+                } else {
+                    cell.classList.remove('error');
+                }
+            });
+            if (!hasError && allFilled) {
+                gameWin();
+            } else if (hasError) {
+                showMessage('ERROR DETECTED_', 'error');
+            } else if (!allFilled) {
+                showMessage('INCOMPLETE_', 'error');
+            }
+        }
+
+        function clearInput() {
+            document.querySelectorAll('.cell.input-cell').forEach(cell => {
+                let input = cell.querySelector('input');
+                input.value = '';
+                cell.classList.remove('error');
+            });
+            saveCurrentInput();
+            hideMessage();
+        }
+
+        function gameWin() {
+            stopTimer();
+            clearSavedGame();
+            saveRecord(currentLevel, seconds);
+            document.getElementById('finalTime').textContent = formatTime(seconds);
+            const levels = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+            document.getElementById('finalLevel').textContent = levels[currentLevel];
+            const score = calculateAIScore(currentLevel, seconds);
+            document.getElementById('aiStars').textContent = '★'.repeat(score.stars) + '☆'.repeat(5 - score.stars);
+            document.getElementById('aiComment').textContent = score.comment;
+            showPage('victoryPage');
+        }
+
+        function calculateAIScore(level, time) {
+            const baseTimes = { easy: 180, medium: 300, hard: 600 };
+            const baseTime = baseTimes[level];
+            const ratio = baseTime / time;
+            if (ratio >= 2) return { stars: 5, comment: 'ACCESS LEVEL: OMEGA' };
+            if (ratio >= 1.5) return { stars: 4, comment: 'ACCESS LEVEL: ALPHA' };
+            if (ratio >= 1) return { stars: 3, comment: 'ACCESS LEVEL: BETA' };
+            if (ratio >= 0.7) return { stars: 2, comment: 'ACCESS LEVEL: GAMMA' };
+            return { stars: 1, comment: 'ACCESS LEVEL: DELTA' };
+        }
+
+        function showMessage(text, type) {
+            let msg = document.getElementById('message');
+            msg.textContent = '> ' + text;
+            msg.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            let msg = document.getElementById('message');
+            msg.className = 'message';
+            msg.textContent = '';
+        }
+
+        function init() {
+            updateContinueButton();
+            loadRecords();
+        }
+
+        init();
+
+        // ===== 数据流效果 =====
+        (function() {
+            const dataStream = document.getElementById('dataStream');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            const numColumns = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < numColumns; i++) {
+                const column = document.createElement('div');
+                column.className = 'data-stream-column';
+                column.style.left = (i * 20) + 'px';
+                column.style.animationDelay = (Math.random() * 15) + 's';
+                column.style.animationDuration = (10 + Math.random() * 10) + 's';
+                
+                let text = '';
+                const length = 10 + Math.floor(Math.random() * 20);
+                for (let j = 0; j < length; j++) {
+                    text += chars[Math.floor(Math.random() * chars.length)] + '<br>';
+                }
+                column.innerHTML = text;
+                dataStream.appendChild(column);
+            }
+        })();
+    </script>
+</body>
+</html>
